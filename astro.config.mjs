@@ -16,12 +16,15 @@ export default defineConfig(({ mode }) => {
     PUBLIC_SANITY_STUDIO_PROJECT_ID,
     PUBLIC_SANITY_STUDIO_DATASET,
     PUBLIC_SANITY_PROJECT_ID,
+    PUBLIC_SANITY_PROJECTID,
     PUBLIC_SANITY_DATASET,
   } = loadEnv(mode, process.cwd(), "");
 
   // Different environments use different variables
   const projectId =
-    PUBLIC_SANITY_STUDIO_PROJECT_ID || PUBLIC_SANITY_PROJECT_ID;
+    PUBLIC_SANITY_STUDIO_PROJECT_ID ||
+    PUBLIC_SANITY_PROJECT_ID ||
+    PUBLIC_SANITY_PROJECTID;
   const dataset = PUBLIC_SANITY_STUDIO_DATASET || PUBLIC_SANITY_DATASET;
 
   return {

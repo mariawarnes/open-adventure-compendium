@@ -1,16 +1,38 @@
+import { createClient } from "@sanity/client";
 import type { ImageAsset, Slug } from "@sanity/types";
 import groq from "groq";
-import { sanityClient } from "sanity:client";
+
+const projectId =
+  import.meta.env.PUBLIC_SANITY_STUDIO_PROJECT_ID ||
+  import.meta.env.PUBLIC_SANITY_PROJECT_ID ||
+  import.meta.env.PUBLIC_SANITY_PROJECTID;
+
+const dataset =
+  import.meta.env.PUBLIC_SANITY_STUDIO_DATASET ||
+  import.meta.env.PUBLIC_SANITY_DATASET;
+
+if (!projectId || !dataset) {
+  throw new Error(
+    "Missing Sanity configuration. Set PUBLIC_SANITY_PROJECT_ID (or legacy PUBLIC_SANITY_PROJECTID) and PUBLIC_SANITY_DATASET."
+  );
+}
+
+const sanityClient = createClient({
+  projectId,
+  dataset,
+  apiVersion: "2024-12-08",
+  useCdn: false,
+});
 
 export async function getResources(): Promise<Resources[]> {
   return await sanityClient.fetch(
-    groq`*[_type == "resource" && defined(slug.current)] | order(_createdAt desc)`
+    groq`*[_type == "resources"] | order(_createdAt desc)`
   );
 }
 
 export async function getResource(slug: string): Promise<Resources> {
   return await sanityClient.fetch(
-    groq`*[_type == "resource" && slug.current == $slug][0]`,
+    groq`*[_type == "resources" && slug.current == $slug][0]`,
     {
       slug,
     }
@@ -89,6 +111,7 @@ export interface AdventureEncounter {
 }
 
 export interface Adventures {
+  _key: string;
   _type: "adventures";
   name: string;
   slug?: Slug;
@@ -108,20 +131,24 @@ export interface Authors {
 }
 
 export interface Editions {
+  _key: string;
   name: string;
   slug: Slug;
   systems?: Systems[];
 }
 
 export interface Entities {
+  _key: string;
   name: string;
 }
 
 export interface Locations {
+  _key: string;
   name: string;
 }
 
 export interface Resources {
+  _key: string;
   type: ResourceType;
   material?: ResourceMaterial;
   platform?: ResourcePlatform;
@@ -133,17 +160,20 @@ export interface Resources {
 }
 
 export interface Settings {
+  _key: string;
   name: string;
   slug: Slug;
   themes?: Themes[];
 }
 
 export interface Systems {
+  _key: string;
   name: string;
   slug: Slug;
 }
 
 export interface Themes {
+  _key: string;
   name: string;
   slug: Slug;
   description?: string;

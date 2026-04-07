@@ -1,4 +1,6 @@
 ---
+import { getResources } from "../utils/sanity";
+const resources = await getResources();
 
 ---
 
@@ -13,5 +15,11 @@
 	</head>
 	<body>
 		<h1>Homepage</h1>
+    {resources.map((resource) => (
+      <div key={resource._key}>
+        <h2>{resource.type}</h2>
+        <p>{resource.entity?.[0]?.name}</p>
+      </div>
+    ))}
 	</body>
 </html>
