@@ -1,5 +1,5 @@
-import {FolderIcon} from '@sanity/icons'
-import {defineField, defineType} from 'sanity'
+import { FolderIcon } from '@sanity/icons'
+import { defineField, defineType } from 'sanity'
 
 const resourceTypeOptions = [
   {title: 'Campaign Guide', value: 'campaignGuide'},
@@ -7,6 +7,7 @@ const resourceTypeOptions = [
   {title: 'Playlist', value: 'playlist'},
   {title: 'Soundboard', value: 'soundboard'},
   {title: 'Mini', value: 'mini'},
+  {title: 'Token', value: 'token'},
   {title: 'Terrain', value: 'terrain'},
   {title: 'Item Card', value: 'itemCard'},
   {title: 'Handout', value: 'handout'},
@@ -15,6 +16,7 @@ const resourceTypeOptions = [
 ]
 
 const platformOptions = [
+  {title: 'Any', value: 'any'},
   {title: 'Talespire', value: 'talespire'},
   {title: 'Tabletop Simulator', value: 'tabletopSimulator'},
   {title: 'VTT', value: 'vtt'},
@@ -45,22 +47,10 @@ export const resources = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'modes',
-      title: 'Modes',
-      type: 'string',
-      hidden: ({document}) => document?.type !== 'map' && document?.type !== 'mini',
-      options: {
-        list: [
-          {title: 'Digital', value: 'digital'},
-          {title: 'Physical', value: 'physical'},
-        ],
-      },
-    }),
-    defineField({
       name: 'material',
       title: 'Material',
       type: 'string',
-      hidden: ({document}) => document?.modes !== 'physical',
+      hidden: ({document}) => document?.type !== 'mini',
       options: {
         list: [
           {title: 'Paper', value: 'paper'},
@@ -72,7 +62,7 @@ export const resources = defineType({
       name: 'platform',
       title: 'Platform',
       type: 'string',
-      hidden: ({ document }) => document?.modes !== 'digital',
+      hidden: ({ document }) => document?.type !== 'map',
       options: {
         list: platformOptions,
       },
@@ -81,7 +71,7 @@ export const resources = defineType({
       name: 'entity',
       title: 'Related Entity*',
       type: 'reference',
-      hidden: ({ document }) => document?.type !== 'mini' && document?.type !== 'portrait',
+      hidden: ({ document }) => document?.type !== 'mini' && document?.type !== 'portrait' && document?.type !== 'token',
       to: [
         {type: 'entities'}
       ],
@@ -89,8 +79,8 @@ export const resources = defineType({
         rule.custom((value, context) => {
           const type = context.document?.type
 
-          if ((type === 'mini' || type === 'portrait') && !value?._ref) {
-            return 'This field is required when type is mini or portrait'
+          if ((type === 'mini' || type === 'portrait' || type === 'token') && !value?._ref) {
+            return 'This field is required when type is mini, token or portrait'
           }
 
           return true
@@ -98,7 +88,7 @@ export const resources = defineType({
     }),
     defineField({
       name: 'location',
-      title: 'Related Location*',
+      title: 'Related Location*', 
       type: 'reference',
       hidden: ({ document }) => document?.type !== 'map' && document?.type !== 'terrain',
       to: [
@@ -119,7 +109,35 @@ export const resources = defineType({
       title: 'URL*',
       description: 'Do not use direct download links. Link to the page.',
       type: 'url',
-      validation: (rule) => rule.required(),
+      hidden: ({ document }) => document?.type === 'portrait',
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          if (context.document?.type !== 'portrait' && !value) {
+            return 'This field is required unless type is portrait'
+          }
+
+          return true
+        }),
+    }),
+    defineField({
+      name: 'image',
+      title: 'Image*',
+      type: 'image',
+      hidden: ({ document }) => document?.type !== 'portrait',
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          if (context.document?.type === 'portrait' && !value?.asset?._ref) {
+            return 'This field is required when type is portrait'
+          }
+
+          return true
+        }),
+    }),
+    defineField({
+      name: 'attribution',
+      title: 'Attribution',
+      type: 'string',
+      hidden: ({ document }) => document?.type !== 'portrait',
     }),
   ],
   preview: {
@@ -129,13 +147,14 @@ export const resources = defineType({
       locationName: 'location.name',
       platform: 'platform',
       subtitle: 'url',
+      attribution: 'attribution',
     },
-    prepare({type, entityName, platform, locationName, subtitle}) {
+    prepare({type, entityName, platform, locationName, subtitle, attribution}) {
       const platformTitle = platformTitles[platform]
 
       return {
         title: entityName ? entityName + " " + (platformTitle ? platformTitle + " " : "") + resourceTypeTitles[type] : locationName ? locationName + " " + (platformTitle ? platformTitle + " " : "") + resourceTypeTitles[type] : resourceTypeTitles[type] || 'Untitled resource',
-        subtitle,
+        subtitle: type === 'portrait' ? attribution : subtitle,
       }
     },
   },
