@@ -1,7 +1,7 @@
 ---
 import type { InferGetStaticParamsType } from "astro";
 import Layout from "../../layouts/Layout.astro";
-import { getAdventure, getAdventuresList } from "../../utils/sanity";
+import { getAdventure, getAdventuresList } from "../../utils/sanity/functions";
 
 export async function getStaticPaths() {
   const adventures = await getAdventuresList();
@@ -21,9 +21,9 @@ const adventure = await getAdventure(slug);
     Website
   </a>
   
-    {adventure.authors?.map((author) => (
-      <span key={author._key}>{author.name}</span>
-    ))}
+  {adventure.authors?.map((author) => (
+    <span key={author._key}>{author.name}</span>
+  ))}
   
 
   <h2>Encounters</h2>

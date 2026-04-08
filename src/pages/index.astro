@@ -1,5 +1,18 @@
 ---
-import { getAdventuresList } from "../utils/sanity";
+import SearchFilter from "../components/SearchFilter.astro";
+import { getAdventuresList, getAuthorsList, getDurationList, getEditionsList, getSystemsList } from "../utils/sanity/functions";
+import type { AdventureFilters, AdventureOptions } from "../utils/sanity/types";
+
+const editions = await getEditionsList();
+const systems = await getSystemsList();
+const duration = await getDurationList();
+const authors = await getAuthorsList();
+const levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(String);
+const partySizes = [1, 2, 3, 4, 5, 6, 7, 8].map(String);
+
+const filters: AdventureFilters = {};
+const options: AdventureOptions = { editions, systems, duration, authors, levels, partySizes };
+
 const adventures = await getAdventuresList();
 
 ---
@@ -14,13 +27,123 @@ const adventures = await getAdventuresList();
 		<title>Homepage</title>
 	</head>
 	<body>
+    <div data-selected-filters></div>
+
+    <SearchFilter options={options} filters={filters} />
 		
     {adventures.map((adventure) => (
-      <div key={adventure._key}>
+      <div
+        key={adventure._key}
+        data-adventure
+        data-authors={adventure.authorSlugs?.join(",") ?? ""}
+        data-editions={adventure.editionSlugs?.join(",") ?? ""}
+        data-systems={adventure.systemSlugs?.join(",") ?? ""}
+        data-duration={adventure.duration ?? ""}
+        data-levels={adventure.recommendedLevels?.join(",") ?? ""}
+        data-party-sizes={adventure.recommendedPartySize?.join(",") ?? ""}
+      >
         <a href={`/adventure/${adventure.slug?.current}`}>{adventure.name}</a>
-        
       </div>
     ))}
+    <p data-no-adventures hidden>No adventures match these filters.</p>
+
+    <script is:inline>
+      const form = document.querySelector("[data-search-filter]");
+      const selectedFilters = document.querySelector("[data-selected-filters]");
+      const adventureItems = Array.from(document.querySelectorAll("[data-adventure]"));
+      const noAdventuresMessage = document.querySelector("[data-no-adventures]");
+
+      const getSelectedValues = (name) =>
+        new URLSearchParams(window.location.search)
+          .getAll(name)
+          .map((value) => value.trim())
+          .filter(Boolean);
+
+      const filtersFromUrl = {
+        author: getSelectedValues("author"),
+        edition: getSelectedValues("edition"),
+        system: getSelectedValues("system"),
+        duration: getSelectedValues("duration"),
+        level: getSelectedValues("level"),
+        partySize: getSelectedValues("partySize"),
+      };
+
+      const setFieldValue = (fieldName, values) => {
+        const field = form?.elements.namedItem(fieldName);
+
+        if (!(field instanceof HTMLSelectElement)) {
+          return;
+        }
+
+        if (field.multiple) {
+          Array.from(field.options).forEach((option) => {
+            option.selected = values.includes(option.value);
+          });
+          return;
+        }
+
+        field.value = values[0] ?? "";
+      };
+
+      const parseList = (value) =>
+        value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+      const matchesAny = (selectedValues, adventureValues) =>
+        selectedValues.length === 0 || selectedValues.some((value) => adventureValues.includes(value));
+
+      const selectedGroups = [
+        { label: "Selected authors", values: filtersFromUrl.author },
+        { label: "Selected editions", values: filtersFromUrl.edition },
+        { label: "Selected systems", values: filtersFromUrl.system },
+        { label: "Selected duration", values: filtersFromUrl.duration },
+        { label: "Selected levels", values: filtersFromUrl.level },
+        { label: "Selected party sizes", values: filtersFromUrl.partySize },
+      ];
+
+      if (selectedFilters) {
+        selectedFilters.replaceChildren(
+          ...selectedGroups
+            .filter(({ values }) => values.length > 0)
+            .map(({ label, values }) => {
+              const paragraph = document.createElement("p");
+              paragraph.textContent = `${label}: ${values.join(", ")}`;
+              return paragraph;
+            })
+        );
+      }
+
+      setFieldValue("author", filtersFromUrl.author);
+      setFieldValue("edition", filtersFromUrl.edition);
+      setFieldValue("system", filtersFromUrl.system);
+      setFieldValue("duration", filtersFromUrl.duration);
+      setFieldValue("level", filtersFromUrl.level);
+      setFieldValue("partySize", filtersFromUrl.partySize);
+
+      let visibleAdventureCount = 0;
+
+      adventureItems.forEach((adventureItem) => {
+        const matchesFilters =
+          matchesAny(filtersFromUrl.author, parseList(adventureItem.dataset.authors ?? "")) &&
+          matchesAny(filtersFromUrl.edition, parseList(adventureItem.dataset.editions ?? "")) &&
+          matchesAny(filtersFromUrl.system, parseList(adventureItem.dataset.systems ?? "")) &&
+          matchesAny(filtersFromUrl.duration, parseList(adventureItem.dataset.duration ?? "")) &&
+          matchesAny(filtersFromUrl.level, parseList(adventureItem.dataset.levels ?? "")) &&
+          matchesAny(filtersFromUrl.partySize, parseList(adventureItem.dataset.partySizes ?? ""));
+
+        adventureItem.hidden = !matchesFilters;
+
+        if (matchesFilters) {
+          visibleAdventureCount += 1;
+        }
+      });
+
+      if (noAdventuresMessage) {
+        noAdventuresMessage.hidden = visibleAdventureCount > 0;
+      }
+    </script>
     
 	</body>
 </html>
