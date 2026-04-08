@@ -24,7 +24,7 @@ const sanityClient = createClient({
   useCdn: false,
 });
 
-export async function getResources(): Promise<Resources[]> {
+export async function getResourcesList(): Promise<Resources[]> {
   return await sanityClient.fetch(
     groq`*[_type == "resources"] | order(_createdAt desc)`
   );
@@ -33,6 +33,21 @@ export async function getResources(): Promise<Resources[]> {
 export async function getResource(slug: string): Promise<Resources> {
   return await sanityClient.fetch(
     groq`*[_type == "resources" && slug.current == $slug][0]`,
+    {
+      slug,
+    }
+  );
+}
+
+export async function getAdventuresList(): Promise<Adventures[]> {
+  return await sanityClient.fetch(
+    groq`*[_type == "adventures"] | order(_createdAt desc)`
+  );
+}
+
+export async function getAdventure(slug: string): Promise<Adventures> {
+  return await sanityClient.fetch(
+    groq`*[_type == "adventures" && slug.current == $slug][0]`,
     {
       slug,
     }
@@ -114,7 +129,7 @@ export interface Adventures {
   _key: string;
   _type: "adventures";
   name: string;
-  slug?: Slug;
+  slug: Slug;
   publishedAt: string;
   authors?: Authors[];
   duration: AdventureDuration;

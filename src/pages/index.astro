@@ -1,6 +1,6 @@
 ---
-import { getResources } from "../utils/sanity";
-const resources = await getResources();
+import { getAdventuresList } from "../utils/sanity";
+const adventures = await getAdventuresList();
 
 ---
 
@@ -15,10 +15,9 @@ const resources = await getResources();
 	</head>
 	<body>
 		<h1>Homepage</h1>
-    {resources.map((resource) => (
-      <div key={resource._key}>
-        <h2>{resource.type}</h2>
-        <p>{resource.entity?.[0]?.name}</p>
+    {adventures.map((adventure) => (
+      <div key={adventure._key}>
+        <a href={`/adventure/${adventure.slug?.current}`}>{adventure.name}</a>
       </div>
     ))}
 	</body>

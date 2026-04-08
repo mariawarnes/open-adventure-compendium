@@ -1,5 +1,5 @@
-import {BookIcon} from '@sanity/icons'
-import {defineField, defineType} from 'sanity'
+import { BookIcon } from '@sanity/icons'
+import { defineField, defineType } from 'sanity'
 
 export const adventures = defineType({
   name: 'adventures',
@@ -17,7 +17,7 @@ export const adventures = defineType({
       name: 'slug',
       type: 'slug',
       options: {source: 'name'},
-      hidden: true,
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'publishedAt',
@@ -268,6 +268,20 @@ export const adventures = defineType({
             }),
           ]
       }]
+    }),
+    defineField({
+      name: 'characters',
+      title: 'Character(s)',
+      description: 'Named characters who appear in the Campaign Guide.',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [
+            {type: 'entities'}
+          ]
+        }
+      ]
     })
   ]
 })  
