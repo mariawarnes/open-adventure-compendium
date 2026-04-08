@@ -17,5 +17,26 @@ const adventure = await getAdventure(slug);
 ---
 
 <Layout title={adventure.name}>
-<h1>{adventure.name}</h1>
+  <a href={adventure.website} target="_blank" rel="noopener noreferrer">
+    Website
+  </a>
+  
+    {adventure.authors?.map((author) => (
+      <span key={author._key}>{author.name}</span>
+    ))}
+  
+
+  <h2>Encounters</h2>
+  {adventure.encounters?.map(encounter => (
+    <div key={encounter._key}>
+      {encounter.encounterName}
+    </div>
+  ))}
+
+  <h2>Characters</h2>
+  {adventure.characters?.map(character => (
+    <div key={character._key}>
+      {character.name}
+    </div>
+  ))}
 </Layout>

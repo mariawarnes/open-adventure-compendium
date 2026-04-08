@@ -47,7 +47,26 @@ export async function getAdventuresList(): Promise<Adventures[]> {
 
 export async function getAdventure(slug: string): Promise<Adventures> {
   return await sanityClient.fetch(
-    groq`*[_type == "adventures" && slug.current == $slug][0]`,
+    groq`
+    *[_type == "adventures" && slug.current == $slug][0] {
+      authors[] {
+        name
+      },
+      website,
+      encounters[] {
+        _key,
+        _type,
+        encounterName,
+        locations[]->{
+          _key,
+          name
+        },
+      },
+      characters[]->{
+        _key,
+        name
+      }
+    }`,
     {
       slug,
     }
@@ -139,6 +158,7 @@ export interface Adventures {
   recommendedLevels?: AdventureRecommendedLevel[];
   recommendedPartySize?: AdventurePartySize[];
   encounters?: AdventureEncounter[];
+  characters?: Entities[];
 }
 
 export interface Authors {

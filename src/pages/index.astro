@@ -14,11 +14,13 @@ const adventures = await getAdventuresList();
 		<title>Homepage</title>
 	</head>
 	<body>
-		<h1>Homepage</h1>
+		
     {adventures.map((adventure) => (
       <div key={adventure._key}>
         <a href={`/adventure/${adventure.slug?.current}`}>{adventure.name}</a>
+        
       </div>
     ))}
+    
 	</body>
 </html>
