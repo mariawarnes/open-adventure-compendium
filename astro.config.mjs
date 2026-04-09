@@ -1,5 +1,6 @@
 // Loading environment variables from .env files
 // https://docs.astro.build/en/guides/configuring-astro/#environment-variables
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import { loadEnv } from "vite";
 
@@ -82,6 +83,10 @@ export default defineConfig(({ mode }) => {
       }),
       react(), // Required for Sanity Studio
       ...(site ? [sitemap()] : []),
+      
     ],
+    vite: {
+      plugins: [tailwindcss()],
+    },
   };
 });
