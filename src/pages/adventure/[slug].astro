@@ -1,7 +1,11 @@
 ---
-import type { InferGetStaticParamsType } from "astro";
-import Layout from "../../layouts/Layout.astro";
-import { getAdventure, getAdventuresList } from "../../utils/sanity/functions";
+import Layout from "@/layouts/Layout.astro";
+import {
+  getAdventure,
+  getAdventuresList,
+  urlFor,
+} from "@/utils/sanity/functions";
+import type { Params } from "astro";
 
 export async function getStaticPaths() {
   const adventures = await getAdventuresList();
@@ -10,33 +14,97 @@ export async function getStaticPaths() {
   }));
 }
 
-type Params = InferGetStaticParamsType<typeof getStaticPaths>;
 const { slug } = Astro.params as Params;
+
+if (!slug) {
+  throw new Error("Missing adventure slug");
+}
 
 const adventure = await getAdventure(slug);
 ---
 
 <Layout title={adventure.name}>
+  <h2>{adventure.name}</h2>
+
+  {adventure.edition?.map((item) => <span id={item._key}>{item.name}</span>)}
+  {adventure.recommendedLevels?.map((level) => <span>{level}</span>)}
+  {adventure.duration}
+
   <a href={adventure.website} target="_blank" rel="noopener noreferrer">
-    Website
+    by
+    {
+      adventure.authors?.map((author) => (
+        <span id={author._key}>{author.name}</span>
+      ))
+    }
   </a>
-  
-  {adventure.authors?.map((author) => (
-    <span key={author._key}>{author.name}</span>
-  ))}
-  
 
   <h2>Encounters</h2>
-  {adventure.encounters?.map(encounter => (
-    <div key={encounter._key}>
-      {encounter.encounterName}
-    </div>
-  ))}
+  <div>
+    {
+      adventure.encounters?.map((encounter) => (
+        <details id={encounter._key} name="encounter">
+          <summary>{encounter.encounterName}</summary>
+          {encounter.locations?.map((location) => (
+            <p>{location.name}</p>
+          ))}
+          {encounter.entities?.map((entity) => (
+            <div id={entity._key}>
+              <p>{entity.name || entity.entity.name}</p>
+              {entity.entity.resources?.map((resource) => (
+                <div>
+                  <h3>{resource.type}</h3>
+                  {resource.image && (
+                    <a href={urlFor(resource.image).url()}>Link</a>
+                  )}
+                  {resource.url && <a href={resource.url}>Link</a>}
+                </div>
+              ))}
+            </div>
+          ))}
+        </details>
+      ))
+    }
+  </div>
 
   <h2>Characters</h2>
-  {adventure.characters?.map(character => (
-    <div key={character._key}>
-      {character.name}
-    </div>
-  ))}
+  <div>
+    {
+      adventure.characters?.map((character) => (
+        <div id={character._key}>
+          {character.name}
+          {character.resources?.map((resource) => (
+            <div>
+              <h3>{resource.type}</h3>
+              {resource.image && (
+                <a href={urlFor(resource.image).url()}>Link</a>
+              )}
+              {resource.url && <a href={resource.url}>Link</a>}
+            </div>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <h2>Locations</h2>
+  <div>
+    {
+      adventure.locations?.map((location) => (
+        <div id={location._key}>
+          {location.name}
+          {location.resources &&
+            location.resources.map((resource) => (
+              <div>
+                <h3>{resource.type}</h3>
+                {resource.image && (
+                  <a href={urlFor(resource.image).url()}>Link</a>
+                )}
+                {resource.url && <a href={resource.url}>Link</a>}
+              </div>
+            ))}
+        </div>
+      ))
+    }
+  </div>
 </Layout>

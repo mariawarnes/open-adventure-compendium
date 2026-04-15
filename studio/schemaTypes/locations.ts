@@ -12,5 +12,5 @@ export const locations = defineType({
       type: 'string',
       validation: (rule) => rule.required(),
     }),
-  ]
+  ],
 })

@@ -38,55 +38,50 @@ function resolveSiteUrl(...values) {
   return undefined;
 }
 
+const {
+  PUBLIC_SANITY_STUDIO_PROJECT_ID,
+  PUBLIC_SANITY_STUDIO_DATASET,
+  PUBLIC_SANITY_PROJECT_ID,
+  PUBLIC_SANITY_PROJECTID,
+  PUBLIC_SANITY_DATASET,
+  PUBLIC_SITE_URL,
+  SITE_URL,
+  VERCEL_ENV,
+  VERCEL_PROJECT_PRODUCTION_URL,
+  VERCEL_URL,
+} = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
+
+// Different environments use different variables
+const projectId =
+  PUBLIC_SANITY_STUDIO_PROJECT_ID ||
+  PUBLIC_SANITY_PROJECT_ID ||
+  PUBLIC_SANITY_PROJECTID;
+const dataset = PUBLIC_SANITY_STUDIO_DATASET || PUBLIC_SANITY_DATASET;
+const isVercelProduction = VERCEL_ENV === "production";
+const site = resolveSiteUrl(
+  SITE_URL,
+  PUBLIC_SITE_URL,
+  isVercelProduction ? VERCEL_PROJECT_PRODUCTION_URL : undefined,
+  isVercelProduction ? VERCEL_URL : undefined,
+);
+
 // https://astro.build/config
-export default defineConfig(({ mode }) => {
-  const {
-    PUBLIC_SANITY_STUDIO_PROJECT_ID,
-    PUBLIC_SANITY_STUDIO_DATASET,
-    PUBLIC_SANITY_PROJECT_ID,
-    PUBLIC_SANITY_PROJECTID,
-    PUBLIC_SANITY_DATASET,
-    PUBLIC_SITE_URL,
-    SITE_URL,
-    VERCEL_ENV,
-    VERCEL_PROJECT_PRODUCTION_URL,
-    VERCEL_URL,
-  } = loadEnv(mode, process.cwd(), "");
-
-  // Different environments use different variables
-  const projectId =
-    PUBLIC_SANITY_STUDIO_PROJECT_ID ||
-    PUBLIC_SANITY_PROJECT_ID ||
-    PUBLIC_SANITY_PROJECTID;
-  const dataset = PUBLIC_SANITY_STUDIO_DATASET || PUBLIC_SANITY_DATASET;
-  const isVercelProduction = VERCEL_ENV === "production";
-  const site = resolveSiteUrl(
-    SITE_URL,
-    PUBLIC_SITE_URL,
-    isVercelProduction ? VERCEL_PROJECT_PRODUCTION_URL : undefined,
-    isVercelProduction ? VERCEL_URL : undefined,
-  );
-
-  return {
-    site,
-    // Hybrid+adapter is required to support embedded Sanity Studio
-    output: "hybrid",
-    adapter: vercel(),
-    integrations: [
-      sanity({
-        projectId,
-        dataset,
-        // studioBasePath: "/admin",
-        useCdn: false,
-        // `false` if you want to ensure fresh data
-        apiVersion: "2024-12-08", // Set to date of setup to use the latest API version
-      }),
-      react(), // Required for Sanity Studio
-      ...(site ? [sitemap()] : []),
-      
-    ],
-    vite: {
-      plugins: [tailwindcss()],
-    },
-  };
+export default defineConfig({
+  site,
+  adapter: vercel(),
+  integrations: [
+    sanity({
+      projectId,
+      dataset,
+      // studioBasePath: "/admin",
+      useCdn: false,
+      // `false` if you want to ensure fresh data
+      apiVersion: "2024-12-08", // Set to date of setup to use the latest API version
+    }),
+    react(), // Required for Sanity Studio
+    ...(site ? [sitemap()] : []),
+  ],
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

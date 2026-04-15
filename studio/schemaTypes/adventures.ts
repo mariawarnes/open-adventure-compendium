@@ -1,5 +1,5 @@
-import { BookIcon } from '@sanity/icons'
-import { defineField, defineType } from 'sanity'
+import {BookIcon} from '@sanity/icons'
+import {defineField, defineType} from 'sanity'
 
 export const adventures = defineType({
   name: 'adventures',
@@ -34,21 +34,20 @@ export const adventures = defineType({
         {
           type: 'reference',
           to: [{type: 'authors'}],
-        }
+        },
       ],
     }),
     defineField({
       name: 'duration',
       title: 'Duration*',
       type: 'string',
-      options:
-        { 
-          list: [
-            {title: 'One-shot', value: 'one-shot'},
-            {title: 'Multi-session', value: 'multi-session'},
-          ]
-        },
-        validation: (rule) => rule.required(),
+      options: {
+        list: [
+          {title: 'One-shot', value: 'one-shot'},
+          {title: 'Multi-session', value: 'multi-session'},
+        ],
+      },
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'website',
@@ -61,9 +60,7 @@ export const adventures = defineType({
       of: [
         {
           type: 'reference',
-          to: [
-            {type: 'editions'}
-          ]
+          to: [{type: 'editions'}],
         },
       ],
       validation: (rule) => rule.required(),
@@ -76,9 +73,7 @@ export const adventures = defineType({
       of: [
         {
           type: 'reference',
-          to: [
-            {type: 'systems'}
-          ],
+          to: [{type: 'systems'}],
           options: {
             filter: async ({document, getClient}) => {
               let editionIds = []
@@ -86,9 +81,7 @@ export const adventures = defineType({
               // Get an array of edition ref ids from the current document
               // Filter out any null, empty or undefined values from the array
               if (document?.edition) {
-                editionIds = document.edition
-                  .map((edition) => edition?._ref)
-                  .filter((id) => !!id)
+                editionIds = document.edition.map((edition) => edition?._ref).filter((id) => !!id)
               }
 
               // If there are no editions, return a Sanity filter that matches nothing
@@ -101,7 +94,7 @@ export const adventures = defineType({
               // Fetch editions with matching system ids
               const systemIds = await client.fetch(
                 '*[_type == "editions" && _id in $editionIds].systems[]._ref',
-                {editionIds}
+                {editionIds},
               )
 
               // Remove duplicates from the systemIds array
@@ -129,9 +122,9 @@ export const adventures = defineType({
                 filter: '_id in $systemIds',
                 params: {systemIds: uniqueSystemIds},
               }
-            }
-          }
-        }
+            },
+          },
+        },
       ],
       validation: (rule) => rule.required(),
     }),
@@ -142,33 +135,32 @@ export const adventures = defineType({
       of: [
         {
           type: 'string',
-          options:
-            { 
-              list: [
-                {title: '1', value: '1'},
-                {title: '2', value: '2'},
-                {title: '3', value: '3'},
-                {title: '4', value: '4'},
-                {title: '5', value: '5'},
-                {title: '6', value: '6'},
-                {title: '7', value: '7'},
-                {title: '8', value: '8'},
-                {title: '9', value: '9'},
-                {title: '10', value: '10'},
-                {title: '11', value: '11'},
-                {title: '12', value: '12'},
-                {title: '13', value: '13'},
-                {title: '14', value: '14'},
-                {title: '15', value: '15'},
-                {title: '16', value: '16'},
-                {title: '17', value: '17'},
-                {title: '18', value: '18'},
-                {title: '19', value: '19'},
-                {title: '20', value: '20'},
-              ]
-            }
+          options: {
+            list: [
+              {title: '1', value: '1'},
+              {title: '2', value: '2'},
+              {title: '3', value: '3'},
+              {title: '4', value: '4'},
+              {title: '5', value: '5'},
+              {title: '6', value: '6'},
+              {title: '7', value: '7'},
+              {title: '8', value: '8'},
+              {title: '9', value: '9'},
+              {title: '10', value: '10'},
+              {title: '11', value: '11'},
+              {title: '12', value: '12'},
+              {title: '13', value: '13'},
+              {title: '14', value: '14'},
+              {title: '15', value: '15'},
+              {title: '16', value: '16'},
+              {title: '17', value: '17'},
+              {title: '18', value: '18'},
+              {title: '19', value: '19'},
+              {title: '20', value: '20'},
+            ],
+          },
         },
-      ]
+      ],
     }),
     defineField({
       name: 'recommendedPartySize',
@@ -176,21 +168,20 @@ export const adventures = defineType({
       of: [
         {
           type: 'string',
-          options:
-            { 
-              list: [
-                {title: '1', value: '1'},
-                {title: '2', value: '2'},
-                {title: '3', value: '3'},
-                {title: '4', value: '4'},
-                {title: '5', value: '5'},
-                {title: '6', value: '6'},
-                {title: '7', value: '7'},
-                {title: '8', value: '8'},
-              ]
-            }
+          options: {
+            list: [
+              {title: '1', value: '1'},
+              {title: '2', value: '2'},
+              {title: '3', value: '3'},
+              {title: '4', value: '4'},
+              {title: '5', value: '5'},
+              {title: '6', value: '6'},
+              {title: '7', value: '7'},
+              {title: '8', value: '8'},
+            ],
+          },
         },
-      ]
+      ],
     }),
     defineField({
       name: 'encounters',
@@ -214,9 +205,7 @@ export const adventures = defineType({
               of: [
                 {
                   type: 'reference',
-                  to: [
-                    {type: 'locations'}
-                  ]
+                  to: [{type: 'locations'}],
                 },
               ],
             }),
@@ -266,8 +255,9 @@ export const adventures = defineType({
                 },
               ],
             }),
-          ]
-      }]
+          ],
+        },
+      ],
     }),
     defineField({
       name: 'characters',
@@ -277,12 +267,21 @@ export const adventures = defineType({
       of: [
         {
           type: 'reference',
-          to: [
-            {type: 'entities'}
-          ]
-        }
-      ]
-    })
-  ]
-})  
-    
+          to: [{type: 'entities'}],
+        },
+      ],
+    }),
+    defineField({
+      name: 'locations',
+      title: 'Locations(s)',
+      description: 'Named locations which appear in the Campaign Guide.',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'locations'}],
+        },
+      ],
+    }),
+  ],
+})

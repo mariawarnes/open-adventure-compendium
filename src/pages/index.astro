@@ -1,149 +1,93 @@
 ---
-import SearchFilter from "../components/SearchFilter.astro";
-import { getAdventuresList, getAuthorsList, getDurationList, getEditionsList, getSystemsList } from "../utils/sanity/functions";
-import type { AdventureFilters, AdventureOptions } from "../utils/sanity/types";
+export const prerender = false;
 
-const editions = await getEditionsList();
-const systems = await getSystemsList();
-const duration = await getDurationList();
-const authors = await getAuthorsList();
-const levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(String);
-const partySizes = [1, 2, 3, 4, 5, 6, 7, 8].map(String);
+import SearchFilter from "@/components/SearchFilter.astro";
+import Layout from "@/layouts/Layout.astro";
+import "@/styles/global.css";
 
-const filters: AdventureFilters = {};
-const options: AdventureOptions = { editions, systems, duration, authors, levels, partySizes };
+import {
+  getAdventuresList,
+  getAuthorsList,
+  getDurationList,
+  getEditionsList,
+  getSystemsList,
+} from "@/utils/sanity/functions";
+import type {
+  Adventure,
+  AdventureDuration,
+  AdventureFilters,
+  AdventureOptions,
+  AdventurePartySize,
+  AdventureRecommendedLevel,
+} from "@/utils/sanity/types";
 
-const adventures = await getAdventuresList();
+const getSelectedValues = (name: string) =>
+  Astro.url.searchParams
+    .getAll(name)
+    .map((value) => value.trim())
+    .filter(Boolean);
 
+const selectedAuthors = getSelectedValues("author");
+const selectedEditions = getSelectedValues("edition");
+const selectedSystems = getSelectedValues("system");
+const selectedDuration = Astro.url.searchParams.get("duration")?.trim() ?? "";
+const selectedLevels = getSelectedValues(
+  "level",
+) as AdventureRecommendedLevel[];
+const selectedPartySizes = getSelectedValues(
+  "partySize",
+) as AdventurePartySize[];
+
+const filters: AdventureFilters = {
+  selectedAuthors,
+  selectedEditions,
+  selectedSystems,
+  selectedDuration: selectedDuration
+    ? [selectedDuration as AdventureDuration]
+    : [],
+  selectedLevels,
+  selectedPartySizes,
+};
+
+const [authors, systems, editions, duration, adventures] = await Promise.all([
+  getAuthorsList(),
+  getSystemsList(),
+  getEditionsList(),
+  getDurationList(),
+  getAdventuresList(filters),
+]);
+
+const options: AdventureOptions = {
+  authors,
+  editions,
+  systems,
+  duration,
+  levels: Array.from({ length: 20 }, (_, index) =>
+    String(index + 1),
+  ) as AdventureRecommendedLevel[],
+  partySizes: Array.from({ length: 8 }, (_, index) =>
+    String(index + 1),
+  ) as AdventurePartySize[],
+};
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Homepage</title>
-	</head>
-	<body>
-    <div data-selected-filters></div>
+<Layout title="Home">
+  <SearchFilter filters={filters} options={options} />
 
-    <SearchFilter options={options} filters={filters} />
-		
-    {adventures.map((adventure) => (
-      <div
-        key={adventure._key}
-        data-adventure
-        data-authors={adventure.authorSlugs?.join(",") ?? ""}
-        data-editions={adventure.editionSlugs?.join(",") ?? ""}
-        data-systems={adventure.systemSlugs?.join(",") ?? ""}
-        data-duration={adventure.duration ?? ""}
-        data-levels={adventure.recommendedLevels?.join(",") ?? ""}
-        data-party-sizes={adventure.recommendedPartySize?.join(",") ?? ""}
-      >
-        <a href={`/adventure/${adventure.slug?.current}`}>{adventure.name}</a>
-      </div>
-    ))}
-    <p data-no-adventures hidden>No adventures match these filters.</p>
-
-    <script is:inline>
-      const form = document.querySelector("[data-search-filter]");
-      const selectedFilters = document.querySelector("[data-selected-filters]");
-      const adventureItems = Array.from(document.querySelectorAll("[data-adventure]"));
-      const noAdventuresMessage = document.querySelector("[data-no-adventures]");
-
-      const getSelectedValues = (name) =>
-        new URLSearchParams(window.location.search)
-          .getAll(name)
-          .map((value) => value.trim())
-          .filter(Boolean);
-
-      const filtersFromUrl = {
-        author: getSelectedValues("author"),
-        edition: getSelectedValues("edition"),
-        system: getSelectedValues("system"),
-        duration: getSelectedValues("duration"),
-        level: getSelectedValues("level"),
-        partySize: getSelectedValues("partySize"),
-      };
-
-      const setFieldValue = (fieldName, values) => {
-        const field = form?.elements.namedItem(fieldName);
-
-        if (!(field instanceof HTMLSelectElement)) {
-          return;
-        }
-
-        if (field.multiple) {
-          Array.from(field.options).forEach((option) => {
-            option.selected = values.includes(option.value);
-          });
-          return;
-        }
-
-        field.value = values[0] ?? "";
-      };
-
-      const parseList = (value) =>
-        value
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean);
-
-      const matchesAny = (selectedValues, adventureValues) =>
-        selectedValues.length === 0 || selectedValues.some((value) => adventureValues.includes(value));
-
-      const selectedGroups = [
-        { label: "Selected authors", values: filtersFromUrl.author },
-        { label: "Selected editions", values: filtersFromUrl.edition },
-        { label: "Selected systems", values: filtersFromUrl.system },
-        { label: "Selected duration", values: filtersFromUrl.duration },
-        { label: "Selected levels", values: filtersFromUrl.level },
-        { label: "Selected party sizes", values: filtersFromUrl.partySize },
-      ];
-
-      if (selectedFilters) {
-        selectedFilters.replaceChildren(
-          ...selectedGroups
-            .filter(({ values }) => values.length > 0)
-            .map(({ label, values }) => {
-              const paragraph = document.createElement("p");
-              paragraph.textContent = `${label}: ${values.join(", ")}`;
-              return paragraph;
-            })
-        );
-      }
-
-      setFieldValue("author", filtersFromUrl.author);
-      setFieldValue("edition", filtersFromUrl.edition);
-      setFieldValue("system", filtersFromUrl.system);
-      setFieldValue("duration", filtersFromUrl.duration);
-      setFieldValue("level", filtersFromUrl.level);
-      setFieldValue("partySize", filtersFromUrl.partySize);
-
-      let visibleAdventureCount = 0;
-
-      adventureItems.forEach((adventureItem) => {
-        const matchesFilters =
-          matchesAny(filtersFromUrl.author, parseList(adventureItem.dataset.authors ?? "")) &&
-          matchesAny(filtersFromUrl.edition, parseList(adventureItem.dataset.editions ?? "")) &&
-          matchesAny(filtersFromUrl.system, parseList(adventureItem.dataset.systems ?? "")) &&
-          matchesAny(filtersFromUrl.duration, parseList(adventureItem.dataset.duration ?? "")) &&
-          matchesAny(filtersFromUrl.level, parseList(adventureItem.dataset.levels ?? "")) &&
-          matchesAny(filtersFromUrl.partySize, parseList(adventureItem.dataset.partySizes ?? ""));
-
-        adventureItem.hidden = !matchesFilters;
-
-        if (matchesFilters) {
-          visibleAdventureCount += 1;
-        }
-      });
-
-      if (noAdventuresMessage) {
-        noAdventuresMessage.hidden = visibleAdventureCount > 0;
-      }
-    </script>
-    
-	</body>
-</html>
+  {
+    adventures.length === 0 ? (
+      <p>No adventures match these filters.</p>
+    ) : (
+      <section>
+        {adventures.map((adventure: Adventure) => (
+          <div>
+            <a href={`/adventure/${adventure.slug?.current}`}>
+              {adventure.name}
+            </a>
+            <p>{adventure.duration}</p>
+          </div>
+        ))}
+      </section>
+    )
+  }
+</Layout>

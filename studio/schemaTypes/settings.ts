@@ -21,14 +21,12 @@ export const settings = defineType({
     defineField({
       name: 'themes',
       type: 'array',
-        of: [
-          {
-            type: 'reference',
-            to: [
-              {type: 'themes'}
-            ]
-          }
-        ]
-    })
-  ]
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'themes'}],
+        },
+      ],
+    }),
+  ],
 })

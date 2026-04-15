@@ -22,5 +22,5 @@ export const themes = defineType({
       name: 'description',
       type: 'text',
     }),
-  ]
+  ],
 })

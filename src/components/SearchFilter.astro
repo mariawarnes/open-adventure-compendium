@@ -1,84 +1,58 @@
 ---
-import type { Author, Edition, System } from "../utils/sanity/types";
+import type { AdventureFilters, AdventureOptions } from "@/utils/sanity/types";
+import MultiSelect from "./MultiSelect.astro";
 
-const {filters, options} = Astro.props;
+interface Props {
+  filters: AdventureFilters;
+  options: AdventureOptions;
+}
 
+const { filters, options } = Astro.props as Props;
 ---
 
-<form method="get" data-search-filter>
+<form method="get">
+  <fieldset>
+    <MultiSelect
+      name="author"
+      selected={filters.selectedAuthors}
+      options={options.authors}
+    />
 
-  <label>
-    Author
-    <select multiple name="author">
-      <option value="">All authors</option>
-      {options.authors.map((author: Author) => (
-        <option value={author.slug.current} selected={filters.selectedAuthors?.includes(author.slug.current)}>
-          {author.name}
-        </option>
-      ))}
+    <MultiSelect
+      name="edition"
+      selected={filters.selectedEditions}
+      options={options.editions}
+    />
+
+    <select class="select" name="duration">
+      <option value="" selected={!filters.selectedDuration?.length}>
+        Any durations
+      </option>
+      {
+        options.duration.map((item) => (
+          <option
+            value={item}
+            selected={filters.selectedDuration?.includes(item)}
+          >
+            {item}
+          </option>
+        ))
+      }
     </select>
-  </label>
 
-  <label>
-    Edition
-    <select multiple name="edition">
-      <option value="">All editions</option>
-      {options.editions.map((edition: Edition) => (
-        <option value={edition.slug.current} selected={filters.selectedEditions?.includes(edition.slug.current)}>
-          {edition.name}
-        </option>
-      ))}
-    </select>
-  </label>
+    <MultiSelect
+      name="level"
+      selected={filters.selectedLevels}
+      options={options.levels}
+    />
 
-  <label>
-    System
-    <select multiple name="system">
-      <option value="">All systems</option>
-      {options.systems.map((system: System) => (
-        <option value={system.slug.current} selected={filters.selectedSystems?.includes(system.slug.current)}>
-          {system.name}
-        </option>
-      ))}
-    </select>
-  </label>
+    <MultiSelect
+      name="size"
+      selected={filters.selectedPartySizes}
+      options={options.partySizes}
+    />
+  </fieldset>
 
-  <label>
-    Duration
-    <select name="duration">
-      <option value="">All durations</option>
-      {options.duration.map((item: string) => (
-        <option value={item} selected={filters.selectedDuration?.includes(item)}>
-          {item}
-        </option>
-      ))}
-    </select>
-  </label>
-
-  <label>
-    Recommended Level
-    <select multiple name="level">
-      <option value="">All levels</option>
-      {options.levels.map((level: string) => (
-        <option value={level} selected={filters.selectedLevels?.includes(level)}>
-          {level}
-        </option>
-      ))}
-    </select>
-  </label>
-
-  <label>
-    Recommended Party Size
-    <select multiple name="partySize">
-      <option value="">All party sizes</option>
-      {options.partySizes.map((partySize: string) => (
-        <option value={partySize} selected={filters.selectedPartySizes?.includes(partySize)}>
-          {partySize}
-        </option>
-      ))}
-    </select>
-  </label>
-
-  <button type="submit">Apply</button>
+  <button>Apply</button>
   <a href="/">Clear</a>
 </form>

@@ -21,14 +21,12 @@ export const editions = defineType({
     defineField({
       name: 'systems',
       type: 'array',
-        of: [
-          {
-            type: 'reference',
-            to: [
-              {type: 'systems'}
-            ]
-          }
-        ]
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'systems'}],
+        },
+      ],
     }),
   ],
 })

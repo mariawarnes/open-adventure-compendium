@@ -1,0 +1,43 @@
+---
+import type { Slug } from "sanity";
+
+interface ObjectOption {
+  slug: Slug;
+  name: string;
+}
+
+interface StringOption {
+  slug: Slug;
+  name: string;
+}
+
+interface Props {
+  name: string;
+  selected: string[] | undefined;
+  options: string[] | ObjectOption[];
+}
+
+const { name, selected, options } = Astro.props as Props;
+---
+
+<select class="select" multiple name={name}>
+  <option value="" selected={!selected?.length}>
+    All {name}s
+  </option>
+  {
+    options.map((option: string | ObjectOption) =>
+      typeof option == "object" ? (
+        <option
+          value={option.slug.current}
+          selected={selected?.includes(option.slug.current)}
+        >
+          {option.name}
+        </option>
+      ) : (
+        <option value={option} selected={selected?.includes(option)}>
+          {option}
+        </option>
+      ),
+    )
+  }
+</select>

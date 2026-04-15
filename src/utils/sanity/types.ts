@@ -24,15 +24,7 @@ export type AdventureRecommendedLevel =
   | "19"
   | "20";
 
-export type AdventurePartySize =
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8";
+export type AdventurePartySize = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 
 export type ResourceType =
   | "campaignGuide"
@@ -58,7 +50,7 @@ export type ResourceMaterial = "paper" | "plastic";
 export interface AdventureEncounterEntity {
   _key: string;
   _type: string;
-  entity: Entity[];
+  entity: Entity;
   name?: string;
   quantity: number;
 }
@@ -89,6 +81,7 @@ export interface Adventure {
   recommendedPartySize?: AdventurePartySize[];
   encounters?: AdventureEncounter[];
   characters?: Entity[];
+  locations?: Location[];
 }
 
 export interface Author {
@@ -105,22 +98,28 @@ export interface Edition {
 }
 
 export interface Entity {
+  _id?: string;
   _key: string;
   name: string;
+  resources?: Resource[];
 }
 
 export interface Location {
+  _id?: string;
   _key: string;
   name: string;
+  resources?: Resource[];
 }
 
 export interface Resource {
-  _key: string;
+  _id?: string;
+  _key?: string;
+  name?: string;
   type: ResourceType;
   material?: ResourceMaterial;
   platform?: ResourcePlatform;
-  entity?: Entity[];
-  location?: Location[];
+  entity?: Entity;
+  location?: Location;
   url?: string;
   image?: ImageAsset;
   attribution?: string;

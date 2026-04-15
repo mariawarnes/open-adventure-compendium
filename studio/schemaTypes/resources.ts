@@ -1,5 +1,5 @@
-import { FolderIcon } from '@sanity/icons'
-import { defineField, defineType } from 'sanity'
+import {FolderIcon} from '@sanity/icons'
+import {defineField, defineType} from 'sanity'
 
 const resourceTypeOptions = [
   {title: 'Campaign Guide', value: 'campaignGuide'},
@@ -12,6 +12,7 @@ const resourceTypeOptions = [
   {title: 'Item Card', value: 'itemCard'},
   {title: 'Handout', value: 'handout'},
   {title: 'Portrait', value: 'portrait'},
+  {title: 'Landscape', value: 'landscape'},
   {title: 'VTT Module', value: 'vttModule'},
 ]
 
@@ -23,12 +24,10 @@ const platformOptions = [
 ]
 
 const resourceTypeTitles = Object.fromEntries(
-  resourceTypeOptions.map(({title, value}) => [value, title])
+  resourceTypeOptions.map(({title, value}) => [value, title]),
 )
 
-const platformTitles = Object.fromEntries(
-  platformOptions.map(({title, value}) => [value, title])
-)
+const platformTitles = Object.fromEntries(platformOptions.map(({title, value}) => [value, title]))
 
 export const resources = defineType({
   name: 'resources',
@@ -36,7 +35,6 @@ export const resources = defineType({
   type: 'document',
   icon: FolderIcon,
   fields: [
-
     defineField({
       name: 'type',
       title: 'Type*',
@@ -62,7 +60,7 @@ export const resources = defineType({
       name: 'platform',
       title: 'Platform',
       type: 'string',
-      hidden: ({ document }) => document?.type !== 'map',
+      hidden: ({document}) => document?.type !== 'map',
       options: {
         list: platformOptions,
       },
@@ -71,10 +69,9 @@ export const resources = defineType({
       name: 'entity',
       title: 'Related Entity*',
       type: 'reference',
-      hidden: ({ document }) => document?.type !== 'mini' && document?.type !== 'portrait' && document?.type !== 'token',
-      to: [
-        {type: 'entities'}
-      ],
+      hidden: ({document}) =>
+        document?.type !== 'mini' && document?.type !== 'portrait' && document?.type !== 'token',
+      to: [{type: 'entities'}],
       validation: (rule) =>
         rule.custom((value, context) => {
           const type = context.document?.type
@@ -88,18 +85,17 @@ export const resources = defineType({
     }),
     defineField({
       name: 'location',
-      title: 'Related Location*', 
+      title: 'Related Location*',
       type: 'reference',
-      hidden: ({ document }) => document?.type !== 'map' && document?.type !== 'terrain',
-      to: [
-        {type: 'locations'}
-      ],
+      hidden: ({document}) =>
+        document?.type !== 'map' && document?.type !== 'terrain' && document?.type !== 'landscape',
+      to: [{type: 'locations'}],
       validation: (rule) =>
         rule.custom((value, context) => {
           const type = context.document?.type
 
           if ((type === 'map' || type === 'terrain') && !value?._ref) {
-            return 'This field is required when type is map or terrain'
+            return 'This field is required when type is ma, landscape or terrain'
           }
           return true
         }),
@@ -109,11 +105,15 @@ export const resources = defineType({
       title: 'URL*',
       description: 'Do not use direct download links. Link to the page.',
       type: 'url',
-      hidden: ({ document }) => document?.type === 'portrait',
+      hidden: ({document}) => document?.type === 'portrait' || document?.type === 'landscape',
       validation: (rule) =>
         rule.custom((value, context) => {
-          if (context.document?.type !== 'portrait' && !value) {
-            return 'This field is required unless type is portrait'
+          if (
+            context.document?.type !== 'portrait' &&
+            context.document?.type !== 'landscape' &&
+            !value
+          ) {
+            return 'This field is required unless type is landscape or portrait'
           }
 
           return true
@@ -123,11 +123,14 @@ export const resources = defineType({
       name: 'image',
       title: 'Image*',
       type: 'image',
-      hidden: ({ document }) => document?.type !== 'portrait',
+      hidden: ({document}) => document?.type !== 'portrait' && document?.type !== 'landscape',
       validation: (rule) =>
         rule.custom((value, context) => {
-          if (context.document?.type === 'portrait' && !value?.asset?._ref) {
-            return 'This field is required when type is portrait'
+          if (
+            (context.document?.type === 'portrait' || context.document?.type === 'landscape') &&
+            !value?.asset?._ref
+          ) {
+            return 'This field is required when type is portrait or landscape'
           }
 
           return true
@@ -137,7 +140,7 @@ export const resources = defineType({
       name: 'attribution',
       title: 'Attribution',
       type: 'string',
-      hidden: ({ document }) => document?.type !== 'portrait',
+      hidden: ({document}) => document?.type !== 'portrait' && document?.type !== 'landscape',
     }),
   ],
   preview: {
@@ -153,7 +156,14 @@ export const resources = defineType({
       const platformTitle = platformTitles[platform]
 
       return {
-        title: entityName ? entityName + " " + (platformTitle ? platformTitle + " " : "") + resourceTypeTitles[type] : locationName ? locationName + " " + (platformTitle ? platformTitle + " " : "") + resourceTypeTitles[type] : resourceTypeTitles[type] || 'Untitled resource',
+        title: entityName
+          ? entityName + ' ' + (platformTitle ? platformTitle + ' ' : '') + resourceTypeTitles[type]
+          : locationName
+            ? locationName +
+              ' ' +
+              (platformTitle ? platformTitle + ' ' : '') +
+              resourceTypeTitles[type]
+            : resourceTypeTitles[type] || 'Untitled resource',
         subtitle: type === 'portrait' ? attribution : subtitle,
       }
     },
