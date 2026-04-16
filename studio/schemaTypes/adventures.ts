@@ -136,9 +136,17 @@ export const adventures = defineType({
           title: 'Entity',
           fields: [
             defineField({
-              name: 'encounterName',
+              name: 'name',
               title: 'Name',
               type: 'string',
+            }),
+            defineField({
+              name: 'slug',
+              type: 'slug',
+              options: {
+                source: (_doc, context) => context.parent?.name,
+              },
+              validation: (rule) => rule.required(),
             }),
             defineField({
               name: 'locations',

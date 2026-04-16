@@ -1,16 +1,21 @@
 ---
 interface Action {
-  btnLink: string;
-  btnText: string;
+  url: string;
+  text: string;
+  type?: "primary" | "secondary";
 }
 
 interface Props {
   title: string;
   text?: string;
-  cardAction?: Action;
+  button?: Action;
 }
 
-const { title, text, cardAction } = Astro.props as Props;
+const { title, text, button } = Astro.props as Props;
+const action = button && {
+  ...button,
+  type: button.type ?? "primary",
+};
 ---
 
 <div class="card border-base-300 border bg-base-100 card-md shadow-sm">
@@ -19,10 +24,10 @@ const { title, text, cardAction } = Astro.props as Props;
     {text && <p>{text}</p>}
 
     {
-      cardAction && (
-        <div class="justify-end  mt-1 card-actions">
-          <a href={cardAction.btnLink} class="btn btn-block btn-primary">
-            {cardAction.btnText}
+      action && (
+        <div class="justify-end mt-3 card-actions">
+          <a href={action.url} class={`btn btn-block btn-${action.type}`}>
+            {action.text}
           </a>
         </div>
       )

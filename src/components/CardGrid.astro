@@ -1,0 +1,51 @@
+---
+import type { Slug } from "sanity";
+import Card from "./Card.astro";
+
+type CardGridSection = "encounters" | "locations" | "characters";
+
+interface CardGridItem {
+  name?: string;
+  slug?: Slug;
+}
+
+interface Props {
+  title: string;
+  list?: CardGridItem[];
+  type: CardGridSection;
+  urlPrefix?: string;
+}
+
+const { title, list = [], type, urlPrefix } = Astro.props as Props;
+
+const detailRouteByType: Record<CardGridSection, string> = {
+  encounters: "encounter",
+  locations: "location",
+  characters: "character",
+};
+
+const getButton = (item: CardGridItem, urlPrefix: string | undefined) => {
+  const slug = item.slug?.current;
+
+  if (!slug) {
+    return undefined;
+  }
+
+  return {
+    url: `/${urlPrefix ? urlPrefix + "/" : ""}${detailRouteByType[type]}/${slug}`,
+    text: "Explore",
+    type: "secondary" as const,
+  };
+};
+---
+
+<section id={type} class="scroll-mt-16 mt-18">
+  {title && <h3 class="font-bold text-xl">{title}</h3>}
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
+    {
+      list.map((item) => (
+        <Card title={item.name ?? ""} button={getButton(item, urlPrefix)} />
+      ))
+    }
+  </div>
+</section>

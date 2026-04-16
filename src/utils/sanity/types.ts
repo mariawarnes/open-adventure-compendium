@@ -58,7 +58,7 @@ export interface AdventureEncounterEntity {
 export interface AdventureEncounter {
   _key: string;
   _type: string;
-  encounterName?: string;
+  name?: string;
   locations?: Location[];
   entities?: AdventureEncounterEntity[];
 }

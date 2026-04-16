@@ -90,7 +90,7 @@ const options: AdventureOptions = {
     adventures.length === 0 ? (
       <p>No adventures match these filters.</p>
     ) : (
-      <section class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
+      <section class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 pt-8 pb-4">
         {adventures.map((adventure: Adventure) => (
           <Card
             title={adventure.name}
@@ -99,9 +99,9 @@ const options: AdventureOptions = {
               " by " +
               adventure.authors?.map((a) => a.name).join(", ")
             }
-            cardAction={{
-              btnLink: "/adventure/" + adventure.slug.current,
-              btnText: "Explore",
+            button={{
+              url: "/adventure/" + adventure.slug.current,
+              text: "Explore",
             }}
           />
         ))}

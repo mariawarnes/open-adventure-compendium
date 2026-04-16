@@ -182,6 +182,7 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       slug,
       publishedAt,
       website,
+      campaignGuide,
       duration,
       recommendedLevels,
       recommendedPartySize,
@@ -200,6 +201,7 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       locations[]->{
         _id,
         _key,
+        slug,
         name,
         "resources": *[
           _type == "resources" &&
@@ -215,6 +217,7 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       characters[]->{
         _id,
         _key,
+        slug,
         name,
         "resources": *[
           _type == "resources" &&
@@ -230,7 +233,8 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       encounters[]{
         _key,
         _type,
-        encounterName,
+        slug,
+        name,
         locations[]->{
           _id,
           _key,
@@ -244,6 +248,7 @@ export async function getAdventure(slug: string): Promise<Adventure> {
           _key,
           _type,
           name,
+          slug,
           quantity,
           entity->{
             _id,

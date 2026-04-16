@@ -1,5 +1,7 @@
 ---
 import Card from "@/components/Card.astro";
+import CardGrid from "@/components/CardGrid.astro";
+import SinglePageHeader from "@/components/SinglePageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import { getAdventure, getAdventuresList } from "@/utils/sanity/functions";
 import type { Params } from "astro";
@@ -18,87 +20,97 @@ if (!slug) {
 }
 
 const adventure = await getAdventure(slug);
+
+const recommendedLevels = (adventure.recommendedLevels ?? [])
+  .map((level) => Number(level))
+  .filter((level) => Number.isFinite(level));
+
+const sections = [
+  { id: "encounters", list: adventure.encounters ?? [], title: "Encounters" },
+  { id: "locations", list: adventure.locations ?? [], title: "Locations" },
+  { id: "characters", list: adventure.characters ?? [], title: "Characters" },
+] satisfies Array<{
+  id: "encounters" | "locations" | "characters";
+  title: string;
+  list: Array<{ name?: string; slug?: { current?: string } }>;
+}>;
+
+const populatedSections = sections.filter((section) => section.list.length > 0);
 ---
 
 <Layout title={adventure.name}>
-  <section class="flex px-4 py-6 scroll-mt-24 flex-col items-center">
-    <h2 class="font-bold text-2xl mb-2">{adventure.name}</h2>
+  <SinglePageHeader title={adventure.name}>
+    <Fragment slot="subtitle">
+      <p>
+        {adventure.edition?.map((e) => e.name).join(", ")}
+        {
+          recommendedLevels.length > 0 && (
+            <>
+              {" "}
+              &#x2022; Lvl {Math.min(...recommendedLevels)}&ndash;
+              {Math.max(...recommendedLevels)}
+            </>
+          )
+        }
+        &#x2022;
+        {adventure.duration}
+      </p>
 
-    <p>
-      {adventure.edition?.map((e) => e.name).join(", ")}
-      &#x2022; Lvl
-      {
-        Math.min(...(adventure.recommendedLevels?.map((l) => Number(l)) ?? []))
-      }&ndash;{
-        Math.max(...(adventure.recommendedLevels?.map((l) => Number(l)) ?? []))
-      }
-      &#x2022;
-      {adventure.duration}
-    </p>
+      <p>
+        by
+        {adventure.authors?.map((author) => author.name).join(", ")}
+      </p>
+    </Fragment>
+  </SinglePageHeader>
 
-    <p>
-      by
-      {adventure.authors?.map((author) => author.name).join(", ")}
-    </p>
-  </section>
+  {
+    populatedSections.length > 0 && (
+      <div
+        id="adventure-tabs"
+        role="tablist"
+        class="tabs tabs-box sticky top-0 z-10 lg:hidden"
+      >
+        {populatedSections.map((section) => (
+          <a
+            role="tab"
+            class="tab"
+            href={`#${section.id}`}
+            aria-selected="false"
+          >
+            {section.title}
+          </a>
+        ))}
+      </div>
+    )
+  }
 
-  <div
-    id="adventure-tabs"
-    role="tablist"
-    class="tabs tabs-box sticky top-0 z-10"
-  >
-    <a role="tab" class="tab" href="#encounters" aria-selected="false">
-      Encounters
-    </a>
-    <a role="tab" class="tab" href="#locations" aria-selected="false">
-      Locations
-    </a>
-    <a role="tab" class="tab" href="#characters" aria-selected="false">
-      Characters
-    </a>
-  </div>
+  <div id="content" class="my-2">
+    {
+      adventure.campaignGuide && (
+        <section id="general" class="scroll-mt-24">
+          <div class="grid gap-4 grid-cols-1 py-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card
+              title="Campaign Guide"
+              button={{
+                url: adventure.campaignGuide,
+                text: "Download",
+              }}
+            />
+          </div>
+        </section>
+      )
+    }
 
-  <div id="content my-2">
-    <section id="general" class="scroll-mt-24">
-      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
-        <Card
-          title="Campaign Guide"
-          cardAction={{
-            btnLink: adventure.campaignGuide,
-            btnText: "Download",
-          }}
+    {
+      populatedSections.map((section) => (
+        <CardGrid
+          urlPrefix="adventure"
+          title={section.title}
+          list={section.list}
+          type={section.id}
         />
-      </div>
-    </section>
-
-    <section id="encounters" class="scroll-mt-24">
-      <h3 class="font-bold text-xl">Encounters</h3>
-      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
-        {
-          adventure.encounters?.map((encounter) => (
-            <Card title={encounter.encounterName} />
-          ))
-        }
-      </div>
-    </section>
-
-    <section id="locations" class="scroll-mt-24">
-      <h3 class="font-bold text-xl">Locations</h3>
-      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
-        {adventure.locations?.map((location) => <Card title={location.name} />)}
-      </div>
-    </section>
-
-    <section id="characters" class="scroll-mt-24">
-      <h3 class="font-bold text-xl">Characters</h3>
-      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
-        {
-          adventure.characters?.map((character) => (
-            <Card title={character.name} />
-          ))
-        }
-      </div>
-    </section>
+      ))
+    }
   </div>
 </Layout>
 
@@ -113,7 +125,7 @@ const adventure = await getAdventure(slug);
       (section): section is HTMLElement => section instanceof HTMLElement,
     );
 
-  const setActiveTab = (sectionId) => {
+  const setActiveTab = (sectionId: string) => {
     tabLinks.forEach((tab) => {
       const isActive = tab.getAttribute("href") === `#${sectionId}`;
       tab.classList.toggle("tab-active", isActive);
