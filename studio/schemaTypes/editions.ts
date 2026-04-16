@@ -18,15 +18,5 @@ export const editions = defineType({
       options: {source: 'name'},
       validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: 'systems',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'systems'}],
-        },
-      ],
-    }),
   ],
 })

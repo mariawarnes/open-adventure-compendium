@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import Card from "@/components/Card.astro";
 import SearchFilter from "@/components/SearchFilter.astro";
 import Layout from "@/layouts/Layout.astro";
 import "@/styles/global.css";
@@ -10,7 +11,6 @@ import {
   getAuthorsList,
   getDurationList,
   getEditionsList,
-  getSystemsList,
 } from "@/utils/sanity/functions";
 import type {
   Adventure,
@@ -29,7 +29,6 @@ const getSelectedValues = (name: string) =>
 
 const selectedAuthors = getSelectedValues("author");
 const selectedEditions = getSelectedValues("edition");
-const selectedSystems = getSelectedValues("system");
 const selectedDuration = Astro.url.searchParams.get("duration")?.trim() ?? "";
 const selectedLevels = getSelectedValues(
   "level",
@@ -41,7 +40,6 @@ const selectedPartySizes = getSelectedValues(
 const filters: AdventureFilters = {
   selectedAuthors,
   selectedEditions,
-  selectedSystems,
   selectedDuration: selectedDuration
     ? [selectedDuration as AdventureDuration]
     : [],
@@ -49,9 +47,8 @@ const filters: AdventureFilters = {
   selectedPartySizes,
 };
 
-const [authors, systems, editions, duration, adventures] = await Promise.all([
+const [authors, editions, duration, adventures] = await Promise.all([
   getAuthorsList(),
-  getSystemsList(),
   getEditionsList(),
   getDurationList(),
   getAdventuresList(filters),
@@ -60,32 +57,53 @@ const [authors, systems, editions, duration, adventures] = await Promise.all([
 const options: AdventureOptions = {
   authors,
   editions,
-  systems,
   duration,
-  levels: Array.from({ length: 20 }, (_, index) =>
-    String(index + 1),
-  ) as AdventureRecommendedLevel[],
-  partySizes: Array.from({ length: 8 }, (_, index) =>
-    String(index + 1),
-  ) as AdventurePartySize[],
+  levels: [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+  ],
+  partySizes: ["1", "2", "3", "4", "5", "6", "7", "8"],
 };
 ---
 
-<Layout title="Home">
+<Layout title="Search">
   <SearchFilter filters={filters} options={options} />
 
   {
     adventures.length === 0 ? (
       <p>No adventures match these filters.</p>
     ) : (
-      <section>
+      <section class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
         {adventures.map((adventure: Adventure) => (
-          <div>
-            <a href={`/adventure/${adventure.slug?.current}`}>
-              {adventure.name}
-            </a>
-            <p>{adventure.duration}</p>
-          </div>
+          <Card
+            title={adventure.name}
+            text={
+              adventure.duration +
+              " by " +
+              adventure.authors?.map((a) => a.name).join(", ")
+            }
+            cardAction={{
+              btnLink: "/adventure/" + adventure.slug.current,
+              btnText: "Explore",
+            }}
+          />
         ))}
       </section>
     )

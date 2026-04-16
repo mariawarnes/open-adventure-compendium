@@ -1,10 +1,7 @@
 ---
+import Card from "@/components/Card.astro";
 import Layout from "@/layouts/Layout.astro";
-import {
-  getAdventure,
-  getAdventuresList,
-  urlFor,
-} from "@/utils/sanity/functions";
+import { getAdventure, getAdventuresList } from "@/utils/sanity/functions";
 import type { Params } from "astro";
 
 export async function getStaticPaths() {
@@ -24,87 +21,135 @@ const adventure = await getAdventure(slug);
 ---
 
 <Layout title={adventure.name}>
-  <h2>{adventure.name}</h2>
+  <section class="flex px-4 py-6 scroll-mt-24 flex-col items-center">
+    <h2 class="font-bold text-2xl mb-2">{adventure.name}</h2>
 
-  {adventure.edition?.map((item) => <span id={item._key}>{item.name}</span>)}
-  {adventure.recommendedLevels?.map((level) => <span>{level}</span>)}
-  {adventure.duration}
+    <p>
+      {adventure.edition?.map((e) => e.name).join(", ")}
+      &#x2022; Lvl
+      {
+        Math.min(...(adventure.recommendedLevels?.map((l) => Number(l)) ?? []))
+      }&ndash;{
+        Math.max(...(adventure.recommendedLevels?.map((l) => Number(l)) ?? []))
+      }
+      &#x2022;
+      {adventure.duration}
+    </p>
 
-  <a href={adventure.website} target="_blank" rel="noopener noreferrer">
-    by
-    {
-      adventure.authors?.map((author) => (
-        <span id={author._key}>{author.name}</span>
-      ))
-    }
-  </a>
+    <p>
+      by
+      {adventure.authors?.map((author) => author.name).join(", ")}
+    </p>
+  </section>
 
-  <h2>Encounters</h2>
-  <div>
-    {
-      adventure.encounters?.map((encounter) => (
-        <details id={encounter._key} name="encounter">
-          <summary>{encounter.encounterName}</summary>
-          {encounter.locations?.map((location) => (
-            <p>{location.name}</p>
-          ))}
-          {encounter.entities?.map((entity) => (
-            <div id={entity._key}>
-              <p>{entity.name || entity.entity.name}</p>
-              {entity.entity.resources?.map((resource) => (
-                <div>
-                  <h3>{resource.type}</h3>
-                  {resource.image && (
-                    <a href={urlFor(resource.image).url()}>Link</a>
-                  )}
-                  {resource.url && <a href={resource.url}>Link</a>}
-                </div>
-              ))}
-            </div>
-          ))}
-        </details>
-      ))
-    }
+  <div
+    id="adventure-tabs"
+    role="tablist"
+    class="tabs tabs-box sticky top-0 z-10"
+  >
+    <a role="tab" class="tab" href="#encounters" aria-selected="false">
+      Encounters
+    </a>
+    <a role="tab" class="tab" href="#locations" aria-selected="false">
+      Locations
+    </a>
+    <a role="tab" class="tab" href="#characters" aria-selected="false">
+      Characters
+    </a>
   </div>
 
-  <h2>Characters</h2>
-  <div>
-    {
-      adventure.characters?.map((character) => (
-        <div id={character._key}>
-          {character.name}
-          {character.resources?.map((resource) => (
-            <div>
-              <h3>{resource.type}</h3>
-              {resource.image && (
-                <a href={urlFor(resource.image).url()}>Link</a>
-              )}
-              {resource.url && <a href={resource.url}>Link</a>}
-            </div>
-          ))}
-        </div>
-      ))
-    }
-  </div>
+  <div id="content my-2">
+    <section id="general" class="scroll-mt-24">
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
+        <Card
+          title="Campaign Guide"
+          cardAction={{
+            btnLink: adventure.campaignGuide,
+            btnText: "Download",
+          }}
+        />
+      </div>
+    </section>
 
-  <h2>Locations</h2>
-  <div>
-    {
-      adventure.locations?.map((location) => (
-        <div id={location._key}>
-          {location.name}
-          {location.resources &&
-            location.resources.map((resource) => (
-              <div>
-                <h3>{resource.type}</h3>
-                {resource.image && (
-                  <a href={urlFor(resource.image).url()}>Link</a>
-                )}
-                {resource.url && <a href={resource.url}>Link</a>}
-              </div>
-            ))}
-        </div>
-      ))
-    }
+    <section id="encounters" class="scroll-mt-24">
+      <h3 class="font-bold text-xl">Encounters</h3>
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
+        {
+          adventure.encounters?.map((encounter) => (
+            <Card title={encounter.encounterName} />
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="locations" class="scroll-mt-24">
+      <h3 class="font-bold text-xl">Locations</h3>
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
+        {adventure.locations?.map((location) => <Card title={location.name} />)}
+      </div>
+    </section>
+
+    <section id="characters" class="scroll-mt-24">
+      <h3 class="font-bold text-xl">Characters</h3>
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 py-4">
+        {
+          adventure.characters?.map((character) => (
+            <Card title={character.name} />
+          ))
+        }
+      </div>
+    </section>
   </div>
 </Layout>
+
+<script>
+  const tabs = document.getElementById("adventure-tabs");
+  const tabLinks = Array.from(tabs?.querySelectorAll("a.tab") ?? []);
+  const sections = tabLinks
+    .map((tab) => tab.getAttribute("href")?.slice(1))
+    .filter((sectionId): sectionId is string => Boolean(sectionId))
+    .map((sectionId) => document.getElementById(sectionId))
+    .filter(
+      (section): section is HTMLElement => section instanceof HTMLElement,
+    );
+
+  const setActiveTab = (sectionId) => {
+    tabLinks.forEach((tab) => {
+      const isActive = tab.getAttribute("href") === `#${sectionId}`;
+      tab.classList.toggle("tab-active", isActive);
+      tab.setAttribute("aria-selected", String(isActive));
+    });
+  };
+
+  const updateActiveTab = () => {
+    if (!tabs || sections.length === 0) return;
+
+    const activationOffset = tabs.getBoundingClientRect().height - 5;
+    let activeSection = sections[0];
+
+    sections.forEach((section) => {
+      if (section.getBoundingClientRect().top <= activationOffset) {
+        activeSection = section;
+      }
+    });
+
+    setActiveTab(activeSection.id);
+  };
+
+  tabs?.addEventListener("click", (event) => {
+    const clickedTab =
+      event.target instanceof Element ? event.target.closest("a.tab") : null;
+
+    if (!(clickedTab instanceof HTMLAnchorElement)) return;
+
+    const sectionId = clickedTab.getAttribute("href")?.slice(1);
+
+    if (!sectionId) return;
+
+    setActiveTab(sectionId);
+  });
+
+  window.addEventListener("scroll", updateActiveTab, { passive: true });
+  window.addEventListener("resize", updateActiveTab);
+  updateActiveTab();
+</script>

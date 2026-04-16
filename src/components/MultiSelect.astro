@@ -6,11 +6,6 @@ interface ObjectOption {
   name: string;
 }
 
-interface StringOption {
-  slug: Slug;
-  name: string;
-}
-
 interface Props {
   name: string;
   selected: string[] | undefined;
@@ -18,26 +13,48 @@ interface Props {
 }
 
 const { name, selected, options } = Astro.props as Props;
+
+const allSelected = options.length === selected?.length;
+
+const label =
+  selected?.length && !allSelected
+    ? selected.length + " " + name + " selected"
+    : "All " + name + "s";
 ---
 
-<select class="select" multiple name={name}>
-  <option value="" selected={!selected?.length}>
-    All {name}s
-  </option>
-  {
-    options.map((option: string | ObjectOption) =>
-      typeof option == "object" ? (
-        <option
-          value={option.slug.current}
-          selected={selected?.includes(option.slug.current)}
-        >
-          {option.name}
-        </option>
-      ) : (
-        <option value={option} selected={selected?.includes(option)}>
-          {option}
-        </option>
-      ),
-    )
-  }
-</select>
+<details class="dropdown" name={name}>
+  <summary class="select w-full">{label}</summary>
+  <ul
+    class="menu dropdown-content bg-base-100 gap-2 border border-base-300 rounded-box z-1 w-52 p-2 shadow-sm"
+  >
+    {
+      options.map((option: string | ObjectOption) =>
+        typeof option == "object" ? (
+          <li class="flex flex-row" value={option.slug.current}>
+            <input
+              type="checkbox"
+              id={option.slug.current}
+              name={name}
+              checked={selected?.includes(option.slug.current)}
+              value={option.slug.current}
+              class="checkbox mr-2"
+            />
+            <label for={option.slug.current}>{option.name}</label>
+          </li>
+        ) : (
+          <li class="flex flex-row" value={option}>
+            <input
+              type="checkbox"
+              id={`${name}-${option}`}
+              name={name}
+              checked={selected?.includes(option)}
+              value={option}
+              class="checkbox mr-2"
+            />
+            <label for={`${name}-${option}`}>{option}</label>
+          </li>
+        ),
+      )
+    }
+  </ul>
+</details>

@@ -6,7 +6,6 @@ import { loadEnv } from "vite";
 
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
-import sanity from "@sanity/astro";
 
 // Change this depending on your hosting provider (Vercel, Netlify etc)
 // https://docs.astro.build/en/guides/server-side-rendering/#adding-an-adapter
@@ -39,11 +38,6 @@ function resolveSiteUrl(...values) {
 }
 
 const {
-  PUBLIC_SANITY_STUDIO_PROJECT_ID,
-  PUBLIC_SANITY_STUDIO_DATASET,
-  PUBLIC_SANITY_PROJECT_ID,
-  PUBLIC_SANITY_PROJECTID,
-  PUBLIC_SANITY_DATASET,
   PUBLIC_SITE_URL,
   SITE_URL,
   VERCEL_ENV,
@@ -51,12 +45,6 @@ const {
   VERCEL_URL,
 } = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 
-// Different environments use different variables
-const projectId =
-  PUBLIC_SANITY_STUDIO_PROJECT_ID ||
-  PUBLIC_SANITY_PROJECT_ID ||
-  PUBLIC_SANITY_PROJECTID;
-const dataset = PUBLIC_SANITY_STUDIO_DATASET || PUBLIC_SANITY_DATASET;
 const isVercelProduction = VERCEL_ENV === "production";
 const site = resolveSiteUrl(
   SITE_URL,
@@ -70,14 +58,6 @@ export default defineConfig({
   site,
   adapter: vercel(),
   integrations: [
-    sanity({
-      projectId,
-      dataset,
-      // studioBasePath: "/admin",
-      useCdn: false,
-      // `false` if you want to ensure fresh data
-      apiVersion: "2024-12-08", // Set to date of setup to use the latest API version
-    }),
     react(), // Required for Sanity Studio
     ...(site ? [sitemap()] : []),
   ],

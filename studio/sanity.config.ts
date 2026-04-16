@@ -3,9 +3,14 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {schemaTypes} from './schemaTypes'
 
-// Sanity Studio config is bundled by Vite, so it must use browser-safe env access.
-const projectId = import.meta.env.SANITY_STUDIO_PROJECT_ID
-const dataset = import.meta.env.SANITY_STUDIO_DATASET || 'production'
+const projectId = import.meta.env.SANITY_STUDIO_PROJECT_ID?.trim()
+const dataset = import.meta.env.SANITY_STUDIO_DATASET?.trim() || 'production'
+
+if (!projectId) {
+  throw new Error(
+    'Missing Sanity configuration. Set SANITY_STUDIO_PROJECT_ID in the repo root env file.',
+  )
+}
 
 export default defineConfig({
   name: 'default',

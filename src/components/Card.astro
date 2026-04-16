@@ -1,0 +1,31 @@
+---
+interface Action {
+  btnLink: string;
+  btnText: string;
+}
+
+interface Props {
+  title: string;
+  text?: string;
+  cardAction?: Action;
+}
+
+const { title, text, cardAction } = Astro.props as Props;
+---
+
+<div class="card border-base-300 border bg-base-100 card-md shadow-sm">
+  <div class="card-body">
+    <h2 class="card-title">{title}</h2>
+    {text && <p>{text}</p>}
+
+    {
+      cardAction && (
+        <div class="justify-end  mt-1 card-actions">
+          <a href={cardAction.btnLink} class="btn btn-block btn-primary">
+            {cardAction.btnText}
+          </a>
+        </div>
+      )
+    }
+  </div>
+</div>

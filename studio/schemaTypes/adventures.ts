@@ -54,6 +54,11 @@ export const adventures = defineType({
       type: 'url',
     }),
     defineField({
+      name: 'campaignGuide',
+      type: 'url',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'edition',
       title: 'Compatible Game Edition(s)*',
       type: 'array',
@@ -61,69 +66,6 @@ export const adventures = defineType({
         {
           type: 'reference',
           to: [{type: 'editions'}],
-        },
-      ],
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'system',
-      title: 'Compatible Game System(s)*',
-      description: 'Please select an edition first to see the relevant systems.',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'systems'}],
-          options: {
-            filter: async ({document, getClient}) => {
-              let editionIds = []
-
-              // Get an array of edition ref ids from the current document
-              // Filter out any null, empty or undefined values from the array
-              if (document?.edition) {
-                editionIds = document.edition.map((edition) => edition?._ref).filter((id) => !!id)
-              }
-
-              // If there are no editions, return a Sanity filter that matches nothing
-              if (!editionIds.length) {
-                return {filter: '_id == ""'}
-              }
-
-              const client = getClient({apiVersion: '2026-04-03'})
-
-              // Fetch editions with matching system ids
-              const systemIds = await client.fetch(
-                '*[_type == "editions" && _id in $editionIds].systems[]._ref',
-                {editionIds},
-              )
-
-              // Remove duplicates from the systemIds array
-              const uniqueSystemIds = []
-
-              if (systemIds) {
-                for (const id of systemIds) {
-                  if (!id) {
-                    continue
-                  }
-
-                  if (!uniqueSystemIds.includes(id)) {
-                    uniqueSystemIds.push(id)
-                  }
-                }
-              }
-
-              // If there are no systems, return a Sanity filter that matches nothing
-              if (!uniqueSystemIds.length) {
-                return {filter: '_id == ""'}
-              }
-
-              // Build the Sanity filter
-              return {
-                filter: '_id in $systemIds',
-                params: {systemIds: uniqueSystemIds},
-              }
-            },
-          },
         },
       ],
       validation: (rule) => rule.required(),

@@ -1,0 +1,29 @@
+---
+import type { Slug } from "sanity";
+
+interface ObjectOption {
+  slug: Slug;
+  name: string;
+}
+
+interface Props {
+  name: string;
+  selected: string[] | undefined;
+  options: string[];
+}
+
+const { name, selected, options } = Astro.props as Props;
+---
+
+<div>
+  <select class="select w-full" name={name}>
+    <option value="" selected={!selected?.length}> Any durations </option>
+    {
+      options.map((item: string) => (
+        <option value={item} selected={selected?.includes(item)}>
+          {item}
+        </option>
+      ))
+    }
+  </select>
+</div>

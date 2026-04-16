@@ -2,8 +2,7 @@ import {FolderIcon} from '@sanity/icons'
 import {defineField, defineType} from 'sanity'
 
 const resourceTypeOptions = [
-  {title: 'Campaign Guide', value: 'campaignGuide'},
-  {title: 'Map', value: 'map'},
+  {title: 'Battle Map', value: 'map'},
   {title: 'Playlist', value: 'playlist'},
   {title: 'Soundboard', value: 'soundboard'},
   {title: 'Mini', value: 'mini'},
@@ -43,6 +42,19 @@ export const resources = defineType({
         list: resourceTypeOptions,
       },
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'name',
+      title: 'Name',
+      type: 'string',
+      hidden: ({document}) => document?.type !== 'handout',
+    }),
+    defineField({
+      name: 'adventure',
+      title: 'Related Adventure',
+      type: 'reference',
+      to: [{type: 'adventures'}],
+      hidden: ({document}) => document?.type !== 'handout' && document?.type !== 'playlist',
     }),
     defineField({
       name: 'material',
@@ -88,7 +100,11 @@ export const resources = defineType({
       title: 'Related Location*',
       type: 'reference',
       hidden: ({document}) =>
-        document?.type !== 'map' && document?.type !== 'terrain' && document?.type !== 'landscape',
+        document?.type !== 'map' &&
+        document?.type !== 'playlist' &&
+        document?.type !== 'soundboard' &&
+        document?.type !== 'terrain' &&
+        document?.type !== 'landscape',
       to: [{type: 'locations'}],
       validation: (rule) =>
         rule.custom((value, context) => {

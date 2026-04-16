@@ -11,21 +11,30 @@ import type {
   Author,
   Edition,
   Resource,
-  System,
 } from "./types";
 
-const projectId =
-  import.meta.env.PUBLIC_SANITY_STUDIO_PROJECT_ID ||
-  import.meta.env.PUBLIC_SANITY_PROJECT_ID ||
-  import.meta.env.PUBLIC_SANITY_PROJECTID;
+function resolveEnvValue(
+  ...values: Array<string | undefined>
+): string | undefined {
+  for (const value of values) {
+    const trimmed = value?.trim();
+
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+
+  return undefined;
+}
+
+const projectId = resolveEnvValue(import.meta.env.SANITY_STUDIO_PROJECT_ID);
 
 const dataset =
-  import.meta.env.PUBLIC_SANITY_STUDIO_DATASET ||
-  import.meta.env.PUBLIC_SANITY_DATASET;
+  resolveEnvValue(import.meta.env.SANITY_STUDIO_DATASET) || "production";
 
 if (!projectId || !dataset) {
   throw new Error(
-    "Missing Sanity configuration. Set PUBLIC_SANITY_PROJECT_ID (or legacy PUBLIC_SANITY_PROJECTID) and PUBLIC_SANITY_DATASET.",
+    "Missing Sanity configuration. Set SANITY_STUDIO_PROJECT_ID in your env file.",
   );
 }
 
@@ -45,18 +54,11 @@ export function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-export async function getSystemsList(): Promise<System[]> {
-  return await sanityClient.fetch(
-    groq`*[_type == "systems"] | order(name asc)`,
-  );
-}
-
 export async function getEditionsList(): Promise<Edition[]> {
   return await sanityClient.fetch(
     groq`*[_type == "editions"] | order(name asc) {
       name,
-      slug,
-      "systems": systems[]->{name, slug}
+      slug
     }`,
   );
 }
@@ -102,7 +104,6 @@ export async function getAdventuresList(
 ): Promise<Adventure[]> {
   const selectedAuthors = filters.selectedAuthors || [];
   const selectedEditions = filters.selectedEditions || [];
-  const selectedSystems = filters.selectedSystems || [];
   const selectedDuration = filters.selectedDuration || [];
   const selectedLevels = filters.selectedLevels || [];
   const selectedPartySizes = filters.selectedPartySizes || [];
@@ -122,13 +123,6 @@ export async function getAdventuresList(
       `count((edition[]->slug.current)[@ in $selectedEditions]) > 0`,
     );
     params.selectedEditions = selectedEditions;
-  }
-
-  if (selectedSystems.length > 0) {
-    conditions.push(
-      `count((system[]->slug.current)[@ in $selectedSystems]) > 0`,
-    );
-    params.selectedSystems = selectedSystems;
   }
 
   if (selectedDuration.length > 0) {
@@ -170,14 +164,8 @@ export async function getAdventuresList(
           name,
           slug
         },
-        "system": system[]->{
-          _key,
-          name,
-          slug
-        },
         "authorSlugs": authors[]->slug.current,
-        "editionSlugs": edition[]->slug.current,
-        "systemSlugs": system[]->slug.current
+        "editionSlugs": edition[]->slug.current
       }
     `,
     params,
@@ -202,11 +190,6 @@ export async function getAdventure(slug: string): Promise<Adventure> {
         slug,
         name
       },
-      "system": system[]->{
-        _key,
-        slug,
-        name
-      },
       "authors": authors[]->{
         _key,
         slug,
@@ -214,7 +197,6 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       },
       "authorSlugs": authors[]->slug.current,
       "editionSlugs": edition[]->slug.current,
-      "systemSlugs": system[]->slug.current,
       locations[]->{
         _id,
         _key,

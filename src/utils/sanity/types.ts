@@ -72,11 +72,10 @@ export interface Adventure {
   authors?: Author[];
   duration: AdventureDuration;
   website?: string;
+  campaignGuide: string;
   edition: Edition[];
-  system: System[];
   authorSlugs?: string[];
   editionSlugs?: string[];
-  systemSlugs?: string[];
   recommendedLevels?: AdventureRecommendedLevel[];
   recommendedPartySize?: AdventurePartySize[];
   encounters?: AdventureEncounter[];
@@ -94,7 +93,6 @@ export interface Edition {
   _key: string;
   name: string;
   slug: Slug;
-  systems?: System[];
 }
 
 export interface Entity {
@@ -132,12 +130,6 @@ export interface Setting {
   themes?: Theme[];
 }
 
-export interface System {
-  _key: string;
-  name: string;
-  slug: Slug;
-}
-
 export interface Theme {
   _key: string;
   name: string;
@@ -148,7 +140,6 @@ export interface Theme {
 export interface AdventureOptions {
   authors: Author[];
   editions: Edition[];
-  systems: System[];
   duration: AdventureDuration[];
   levels: AdventureRecommendedLevel[];
   partySizes: AdventurePartySize[];
@@ -157,7 +148,6 @@ export interface AdventureOptions {
 export interface AdventureFilters {
   selectedAuthors?: string[];
   selectedEditions?: string[];
-  selectedSystems?: string[];
   selectedDuration?: AdventureDuration[];
   selectedLevels?: AdventureRecommendedLevel[];
   selectedPartySizes?: AdventurePartySize[];

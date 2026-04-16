@@ -1,6 +1,7 @@
 ---
 import type { AdventureFilters, AdventureOptions } from "@/utils/sanity/types";
 import MultiSelect from "./MultiSelect.astro";
+import SingleSelect from "./SingleSelect.astro";
 
 interface Props {
   filters: AdventureFilters;
@@ -11,7 +12,7 @@ const { filters, options } = Astro.props as Props;
 ---
 
 <form method="get">
-  <fieldset>
+  <fieldset class="flex gap-2 flex-auto flex-col sm:flex-row">
     <MultiSelect
       name="author"
       selected={filters.selectedAuthors}
@@ -24,21 +25,11 @@ const { filters, options } = Astro.props as Props;
       options={options.editions}
     />
 
-    <select class="select" name="duration">
-      <option value="" selected={!filters.selectedDuration?.length}>
-        Any durations
-      </option>
-      {
-        options.duration.map((item) => (
-          <option
-            value={item}
-            selected={filters.selectedDuration?.includes(item)}
-          >
-            {item}
-          </option>
-        ))
-      }
-    </select>
+    <SingleSelect
+      name="duration"
+      selected={filters.selectedDuration}
+      options={options.duration}
+    />
 
     <MultiSelect
       name="level"
@@ -47,12 +38,11 @@ const { filters, options } = Astro.props as Props;
     />
 
     <MultiSelect
-      name="size"
+      name="partySize"
       selected={filters.selectedPartySizes}
       options={options.partySizes}
     />
+    <button class="btn-primary">Apply</button>
+    <a href="/" class="btn btn-secondary">Clear</a>
   </fieldset>
-
-  <button>Apply</button>
-  <a href="/">Clear</a>
 </form>

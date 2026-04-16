@@ -10,7 +10,7 @@
   --color-base-200: #202629;
   --color-base-300: #374045;
   --color-base-content: #f5f3ee;
-  --color-primary: #e40712;
+  --color-primary: #d17f00;
   --color-primary-content: #ffffff;
   --color-secondary: #374045;
   --color-secondary-content: #f9fafa;
@@ -36,12 +36,8 @@
   --noise: 0;
 }
 
-body {
+main {
   @apply p-4;
-}
-
-fieldset {
-  @apply fieldset;
 }
 
 legend {
@@ -58,4 +54,18 @@ button[type="submit"] {
 
 form > a {
   @apply btn btn-secondary;
+}
+
+.dropdown .menu li input + label,
+.dropdown .menu li input + span {
+  padding: 0;
+}
+
+.dropdown .menu li input + label:hover,
+.dropdown .menu li input + span:hover {
+  background-color: transparent;
+}
+
+.fieldset > * {
+  flex: 0 0 1;
 }
