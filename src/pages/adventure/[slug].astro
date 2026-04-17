@@ -3,7 +3,12 @@ import Card from "@/components/Card.astro";
 import CardGrid from "@/components/CardGrid.astro";
 import SinglePageHeader from "@/components/SinglePageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
-import { getAdventure, getAdventuresList } from "@/utils/sanity/functions";
+import {
+  getAdventure,
+  getAdventuresList,
+  getCharactersByAdventure,
+  getLocationsByAdventure,
+} from "@/utils/sanity/functions";
 import type { Params } from "astro";
 
 export async function getStaticPaths() {
@@ -20,6 +25,8 @@ if (!slug) {
 }
 
 const adventure = await getAdventure(slug);
+const characters = await getCharactersByAdventure(slug);
+const locations = await getLocationsByAdventure(slug);
 
 const recommendedLevels = (adventure.recommendedLevels ?? [])
   .map((level) => Number(level))
@@ -27,8 +34,8 @@ const recommendedLevels = (adventure.recommendedLevels ?? [])
 
 const sections = [
   { id: "encounters", list: adventure.encounters ?? [], title: "Encounters" },
-  { id: "locations", list: adventure.locations ?? [], title: "Locations" },
-  { id: "characters", list: adventure.characters ?? [], title: "Characters" },
+  { id: "locations", list: locations ?? [], title: "Locations" },
+  { id: "characters", list: characters ?? [], title: "Characters" },
 ] satisfies Array<{
   id: "encounters" | "locations" | "characters";
   title: string;

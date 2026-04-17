@@ -1,11 +1,11 @@
-import {PinIcon} from '@sanity/icons'
+import {ComponentIcon} from '@sanity/icons'
 import {defineField, defineType} from 'sanity'
 
-export const locations = defineType({
-  name: 'locations',
-  title: 'Locations',
+export const characters = defineType({
+  name: 'characters',
+  title: 'Characters',
   type: 'document',
-  icon: PinIcon,
+  icon: ComponentIcon,
   fields: [
     defineField({
       name: 'name',
@@ -29,7 +29,7 @@ export const locations = defineType({
     defineField({
       name: 'entity',
       title: 'Base Entity',
-      description: 'Optional reusable template, such as Small Temple.',
+      description: 'Optional reusable template, such as Male Human Wizard.',
       type: 'reference',
       to: [{type: 'entities'}],
     }),
@@ -45,7 +45,7 @@ export const locations = defineType({
 
       return {
         title,
-        subtitle: subtitle || 'Adventure Location',
+        subtitle: subtitle || 'Adventure Character',
       }
     },
   },

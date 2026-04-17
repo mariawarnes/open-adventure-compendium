@@ -155,7 +155,7 @@ export const adventures = defineType({
               of: [
                 {
                   type: 'reference',
-                  to: [{type: 'locations'}],
+                  to: [{type: 'entities'}, {type: 'locations'}],
                 },
               ],
             }),
@@ -171,15 +171,25 @@ export const adventures = defineType({
                   fields: [
                     defineField({
                       name: 'entity',
-                      title: 'Entity',
+                      title: 'Entity or Character',
                       type: 'reference',
-                      to: [{type: 'entities'}],
+                      to: [{type: 'entities'}, {type: 'characters'}],
+                      options: {
+                        filter: ({document}) => {
+                          const publishedId = document?._id?.replace(/^drafts\./, '')
+                          const draftId = publishedId ? `drafts.${publishedId}` : undefined
+
+                          return {
+                            filter:
+                              '_type != "characters" || adventure._ref in [$publishedId, $draftId]',
+                            params: {
+                              publishedId,
+                              draftId,
+                            },
+                          }
+                        },
+                      },
                       validation: (rule) => rule.required(),
-                    }),
-                    defineField({
-                      name: 'name',
-                      title: 'Name',
-                      type: 'string',
                     }),
                     defineField({
                       name: 'quantity',
@@ -206,30 +216,6 @@ export const adventures = defineType({
               ],
             }),
           ],
-        },
-      ],
-    }),
-    defineField({
-      name: 'characters',
-      title: 'Character(s)',
-      description: 'Named characters who appear in the Campaign Guide.',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'entities'}],
-        },
-      ],
-    }),
-    defineField({
-      name: 'locations',
-      title: 'Locations(s)',
-      description: 'Named locations which appear in the Campaign Guide.',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'locations'}],
         },
       ],
     }),

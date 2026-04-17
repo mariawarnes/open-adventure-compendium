@@ -6,8 +6,10 @@ import {
 import groq from "groq";
 import type {
   Adventure,
+  AdventureCharacter,
   AdventureDuration,
   AdventureFilters,
+  AdventureLocation,
   Author,
   Edition,
   Resource,
@@ -79,9 +81,43 @@ export async function getResourcesList(): Promise<Resource[]> {
   );
 }
 
+export async function getCharactersByAdventure(
+  adventureSlug: string,
+): Promise<AdventureCharacter[]> {
+  return await sanityClient.fetch(
+    groq`*[_type == "characters" && adventure->slug.current == $adventureSlug] {
+      name,
+      slug,
+      adventure->{
+        slug
+      }
+    }`,
+    {
+      adventureSlug,
+    },
+  );
+}
+
+export async function getLocationsByAdventure(
+  adventureSlug: string,
+): Promise<AdventureLocation[]> {
+  return await sanityClient.fetch(
+    groq`*[_type == "locations" && adventure->slug.current == $adventureSlug] {
+      name,
+      slug,
+      adventure->{
+        slug
+      }
+    }`,
+    {
+      adventureSlug,
+    },
+  );
+}
+
 export async function getResource(
   slug?: string,
-  location?: string,
+  subject?: string,
 ): Promise<Resource | undefined> {
   let conditions: string = `_type == "resources"`;
   let param: string = "";
@@ -89,13 +125,13 @@ export async function getResource(
   if (slug != null && slug != "") {
     conditions += `slug.current == $slug][0]`;
     param = slug;
-  } else if (location != null && location !== "") {
-    conditions += `entity.name == $location][0]`;
-    param = location;
+  } else if (subject != null && subject !== "") {
+    conditions += `(subject.name == $subject || entity.name == $subject || location.name == $subject)][0]`;
+    param = subject;
   }
 
   return await sanityClient.fetch(groq`*[${conditions}] | order(name asc)`, {
-    location: param,
+    subject: param,
   });
 }
 
@@ -198,38 +234,6 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       },
       "authorSlugs": authors[]->slug.current,
       "editionSlugs": edition[]->slug.current,
-      locations[]->{
-        _id,
-        _key,
-        slug,
-        name,
-        "resources": *[
-          _type == "resources" &&
-          location._ref == ^._id
-        ]{
-          _id,
-          type,
-          url,
-          attribution,
-          image
-        }
-      },
-      characters[]->{
-        _id,
-        _key,
-        slug,
-        name,
-        "resources": *[
-          _type == "resources" &&
-          entity._ref == ^._id
-        ]{
-          _id,
-          type,
-          url,
-          attribution,
-          image
-        }
-      },
       encounters[]{
         _key,
         _type,
@@ -238,10 +242,21 @@ export async function getAdventure(slug: string): Promise<Adventure> {
         locations[]->{
           _id,
           _key,
+          slug,
           name,
+          entity->{
+            _id,
+            name,
+            slug,
+            kind
+          },
           "resources": *[
             _type == "resources" &&
-            location._ref == ^._id
+            (
+              subject._ref == ^._id ||
+              entity._ref == ^._id ||
+              location._ref == ^._id
+            )
           ]{ _id, type, url, attribution, image }
         },
         entities[]{
@@ -254,14 +269,19 @@ export async function getAdventure(slug: string): Promise<Adventure> {
             _id,
             _key,
             name,
+            slug,
+            kind,
             "resources": *[
               _type == "resources" &&
-              entity._ref == ^._id
+              (
+                subject._ref == ^._id ||
+                entity._ref == ^._id ||
+                location._ref == ^._id
+              )
             ]{ _id, type, url, attribution, image }
           }
         }
       }
-
     }`,
     {
       slug,

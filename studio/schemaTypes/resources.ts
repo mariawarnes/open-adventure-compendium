@@ -78,41 +78,30 @@ export const resources = defineType({
       },
     }),
     defineField({
-      name: 'entity',
-      title: 'Related Entity*',
+      name: 'subject',
+      title: 'Related Subject*',
       type: 'reference',
-      hidden: ({document}) =>
-        document?.type !== 'mini' && document?.type !== 'portrait' && document?.type !== 'token',
-      to: [{type: 'entities'}],
+      description: 'Use a reusable entity template or an adventure-specific character/location.',
+      hidden: ({document}) => document?.type === 'handout',
+      to: [{type: 'entities'}, {type: 'characters'}, {type: 'locations'}],
       validation: (rule) =>
         rule.custom((value, context) => {
           const type = context.document?.type
+          const requiresSubject = [
+            'map',
+            'soundboard',
+            'mini',
+            'token',
+            'terrain',
+            'itemCard',
+            'portrait',
+            'landscape',
+          ]
 
-          if ((type === 'mini' || type === 'portrait' || type === 'token') && !value?._ref) {
-            return 'This field is required when type is mini, token or portrait'
+          if (requiresSubject.includes(type) && !value?._ref) {
+            return 'This field is required for subject-specific resources'
           }
 
-          return true
-        }),
-    }),
-    defineField({
-      name: 'location',
-      title: 'Related Location*',
-      type: 'reference',
-      hidden: ({document}) =>
-        document?.type !== 'map' &&
-        document?.type !== 'playlist' &&
-        document?.type !== 'soundboard' &&
-        document?.type !== 'terrain' &&
-        document?.type !== 'landscape',
-      to: [{type: 'locations'}],
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const type = context.document?.type
-
-          if ((type === 'map' || type === 'terrain') && !value?._ref) {
-            return 'This field is required when type is ma, landscape or terrain'
-          }
           return true
         }),
     }),
@@ -162,25 +151,26 @@ export const resources = defineType({
   preview: {
     select: {
       type: 'type',
-      entityName: 'entity.name',
-      locationName: 'location.name',
+      name: 'name',
+      subjectName: 'subject.name',
+      adventureName: 'adventure.name',
       platform: 'platform',
       subtitle: 'url',
       attribution: 'attribution',
     },
-    prepare({type, entityName, platform, locationName, subtitle, attribution}) {
+    prepare({type, name, subjectName, adventureName, platform, subtitle, attribution}) {
       const platformTitle = platformTitles[platform]
+      const typeTitle = resourceTypeTitles[type] || 'Untitled resource'
 
       return {
-        title: entityName
-          ? entityName + ' ' + (platformTitle ? platformTitle + ' ' : '') + resourceTypeTitles[type]
-          : locationName
-            ? locationName +
-              ' ' +
-              (platformTitle ? platformTitle + ' ' : '') +
-              resourceTypeTitles[type]
-            : resourceTypeTitles[type] || 'Untitled resource',
-        subtitle: type === 'portrait' ? attribution : subtitle,
+        title: name
+          ? name
+          : subjectName
+            ? subjectName + ' ' + (platformTitle ? platformTitle + ' ' : '') + typeTitle
+            : adventureName
+              ? adventureName + ' ' + typeTitle
+              : typeTitle,
+        subtitle: type === 'portrait' || type === 'landscape' ? attribution : subtitle,
       }
     },
   },

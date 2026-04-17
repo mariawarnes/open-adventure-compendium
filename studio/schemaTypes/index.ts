@@ -1,5 +1,6 @@
 import {adventures} from './adventures'
 import {authors} from './authors'
+import {characters} from './characters'
 import {editions} from './editions'
 import {entities} from './entities'
 import {locations} from './locations'
@@ -9,6 +10,7 @@ import {themes} from './themes'
 
 export const schemaTypes = [
   adventures,
+  characters,
   settings,
   themes,
   editions,
