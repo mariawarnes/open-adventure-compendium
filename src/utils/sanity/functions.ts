@@ -128,7 +128,25 @@ export async function getLocationsByAdventure(
 
 export async function getEncounter(slug: string): Promise<AdventureEncounter> {
   return await sanityClient.fetch(
-    groq`*[_type == "adventures"].encounters[slug.current == $slug][0]`,
+    groq`(*[_type == "adventures"].encounters[])[slug.current == $slug][0]`,
+    {
+      slug,
+    },
+  );
+}
+
+export async function getLocation(slug: string): Promise<AdventureLocation> {
+  return await sanityClient.fetch(
+    groq`*[_type == "locations"][slug.current == $slug][0]`,
+    {
+      slug,
+    },
+  );
+}
+
+export async function getCharacter(slug: string): Promise<AdventureCharacter> {
+  return await sanityClient.fetch(
+    groq`*[_type == "characters"][slug.current == $slug][0]`,
     {
       slug,
     },

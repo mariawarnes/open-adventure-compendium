@@ -1,0 +1,20 @@
+---
+import SinglePageHeader from "@/components/SinglePageHeader.astro";
+import Layout from "@/layouts/Layout.astro";
+import { getLocation } from "@/utils/sanity/functions";
+import type { Params } from "astro";
+
+export const prerender = false;
+
+const { slug } = Astro.params as Params;
+
+if (!slug) {
+  throw new Error("Missing location slug");
+}
+
+const location = await getLocation(slug);
+---
+
+<Layout title={location.name || ""}>
+  <SinglePageHeader title={location.name || ""} />
+</Layout>
