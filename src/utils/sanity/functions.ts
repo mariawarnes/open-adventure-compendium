@@ -8,6 +8,7 @@ import type {
   Adventure,
   AdventureCharacter,
   AdventureDuration,
+  AdventureEncounter,
   AdventureFilters,
   AdventureLocation,
   Author,
@@ -75,6 +76,10 @@ export async function getAuthorsList(): Promise<Author[]> {
   );
 }
 
+export async function getThemesList(): Promise<Author[]> {
+  return await sanityClient.fetch(groq`*[_type == "themes"] | order(name asc)`);
+}
+
 export async function getResourcesList(): Promise<Resource[]> {
   return await sanityClient.fetch(
     groq`*[_type == "resources"] | order(name asc)`,
@@ -90,6 +95,9 @@ export async function getCharactersByAdventure(
       slug,
       adventure->{
         slug
+      },
+      entity->{
+        name
       }
     }`,
     {
@@ -107,6 +115,9 @@ export async function getLocationsByAdventure(
       slug,
       adventure->{
         slug
+      },
+      entity->{
+        name
       }
     }`,
     {
@@ -115,24 +126,13 @@ export async function getLocationsByAdventure(
   );
 }
 
-export async function getResource(
-  slug?: string,
-  subject?: string,
-): Promise<Resource | undefined> {
-  let conditions: string = `_type == "resources"`;
-  let param: string = "";
-
-  if (slug != null && slug != "") {
-    conditions += `slug.current == $slug][0]`;
-    param = slug;
-  } else if (subject != null && subject !== "") {
-    conditions += `(subject.name == $subject || entity.name == $subject || location.name == $subject)][0]`;
-    param = subject;
-  }
-
-  return await sanityClient.fetch(groq`*[${conditions}] | order(name asc)`, {
-    subject: param,
-  });
+export async function getEncounter(slug: string): Promise<AdventureEncounter> {
+  return await sanityClient.fetch(
+    groq`*[_type == "adventures"].encounters[slug.current == $slug][0]`,
+    {
+      slug,
+    },
+  );
 }
 
 export async function getAdventuresList(
@@ -140,6 +140,7 @@ export async function getAdventuresList(
 ): Promise<Adventure[]> {
   const selectedAuthors = filters.selectedAuthors || [];
   const selectedEditions = filters.selectedEditions || [];
+  const selectedThemes = filters.selectedThemes || [];
   const selectedDuration = filters.selectedDuration || [];
   const selectedLevels = filters.selectedLevels || [];
   const selectedPartySizes = filters.selectedPartySizes || [];
@@ -152,6 +153,13 @@ export async function getAdventuresList(
       `count((authors[]->slug.current)[@ in $selectedAuthors]) > 0`,
     );
     params.selectedAuthors = selectedAuthors;
+  }
+
+  if (selectedThemes.length > 0) {
+    conditions.push(
+      `count((themes[]->slug.current)[@ in $selectedThemes]) > 0`,
+    );
+    params.selectedThemes = selectedThemes;
   }
 
   if (selectedEditions.length > 0) {
@@ -195,6 +203,11 @@ export async function getAdventuresList(
           name,
           slug
         },
+        "theme": theme[]->{
+          _key,
+          name,
+          slug
+        },
         "edition": edition[]->{
           _key,
           name,
@@ -216,6 +229,7 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       _type,
       name,
       slug,
+      theme,
       publishedAt,
       website,
       campaignGuide,

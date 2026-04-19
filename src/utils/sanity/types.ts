@@ -102,6 +102,12 @@ export interface Edition {
   slug: Slug;
 }
 
+export interface Theme {
+  _key: string;
+  name: string;
+  slug: Slug;
+}
+
 export interface Entity {
   _id?: string;
   _key?: string;
@@ -166,6 +172,7 @@ export interface Theme {
 export interface AdventureOptions {
   authors: Author[];
   editions: Edition[];
+  themes: Theme[];
   duration: AdventureDuration[];
   levels: AdventureRecommendedLevel[];
   partySizes: AdventurePartySize[];
@@ -174,6 +181,7 @@ export interface AdventureOptions {
 export interface AdventureFilters {
   selectedAuthors?: string[];
   selectedEditions?: string[];
+  selectedThemes?: string[];
   selectedDuration?: AdventureDuration[];
   selectedLevels?: AdventureRecommendedLevel[];
   selectedPartySizes?: AdventurePartySize[];

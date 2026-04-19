@@ -11,6 +11,7 @@ import {
   getAuthorsList,
   getDurationList,
   getEditionsList,
+  getThemesList,
 } from "@/utils/sanity/functions";
 import type {
   Adventure,
@@ -29,6 +30,7 @@ const getSelectedValues = (name: string) =>
 
 const selectedAuthors = getSelectedValues("author");
 const selectedEditions = getSelectedValues("edition");
+const selectedThemes = getSelectedValues("theme");
 const selectedDuration = Astro.url.searchParams.get("duration")?.trim() ?? "";
 const selectedLevels = getSelectedValues(
   "level",
@@ -40,6 +42,7 @@ const selectedPartySizes = getSelectedValues(
 const filters: AdventureFilters = {
   selectedAuthors,
   selectedEditions,
+  selectedThemes,
   selectedDuration: selectedDuration
     ? [selectedDuration as AdventureDuration]
     : [],
@@ -47,9 +50,10 @@ const filters: AdventureFilters = {
   selectedPartySizes,
 };
 
-const [authors, editions, duration, adventures] = await Promise.all([
+const [authors, editions, themes, duration, adventures] = await Promise.all([
   getAuthorsList(),
   getEditionsList(),
+  getThemesList(),
   getDurationList(),
   getAdventuresList(filters),
 ]);
@@ -57,6 +61,7 @@ const [authors, editions, duration, adventures] = await Promise.all([
 const options: AdventureOptions = {
   authors,
   editions,
+  themes,
   duration,
   levels: [
     "1",
@@ -88,7 +93,7 @@ const options: AdventureOptions = {
 
   {
     adventures.length === 0 ? (
-      <p>No adventures match these filters.</p>
+      <p class="pt-8 pb-4">No results</p>
     ) : (
       <section class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 pt-8 pb-4">
         {adventures.map((adventure: Adventure) => (

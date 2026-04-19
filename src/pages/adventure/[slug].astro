@@ -1,6 +1,7 @@
 ---
 import Card from "@/components/Card.astro";
 import CardGrid from "@/components/CardGrid.astro";
+import PageTabs from "@/components/PageTabs.tsx";
 import SinglePageHeader from "@/components/SinglePageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
@@ -36,13 +37,7 @@ const sections = [
   { id: "encounters", list: adventure.encounters ?? [], title: "Encounters" },
   { id: "locations", list: locations ?? [], title: "Locations" },
   { id: "characters", list: characters ?? [], title: "Characters" },
-] satisfies Array<{
-  id: "encounters" | "locations" | "characters";
-  title: string;
-  list: Array<{ name?: string; slug?: { current?: string } }>;
-}>;
-
-const populatedSections = sections.filter((section) => section.list.length > 0);
+];
 ---
 
 <Layout title={adventure.name}>
@@ -70,26 +65,7 @@ const populatedSections = sections.filter((section) => section.list.length > 0);
     </Fragment>
   </SinglePageHeader>
 
-  {
-    populatedSections.length > 0 && (
-      <div
-        id="adventure-tabs"
-        role="tablist"
-        class="tabs tabs-box sticky top-0 z-10 lg:hidden"
-      >
-        {populatedSections.map((section) => (
-          <a
-            role="tab"
-            class="tab"
-            href={`#${section.id}`}
-            aria-selected="false"
-          >
-            {section.title}
-          </a>
-        ))}
-      </div>
-    )
-  }
+  {sections.length > 0 && <PageTabs client:only sections={sections} />}
 
   <div id="content" class="my-2">
     {
@@ -109,66 +85,15 @@ const populatedSections = sections.filter((section) => section.list.length > 0);
     }
 
     {
-      populatedSections.map((section) => (
-        <CardGrid
-          urlPrefix="adventure"
-          title={section.title}
-          list={section.list}
-          type={section.id}
-        />
-      ))
+      sections.length > 0 &&
+        sections.map((section) => (
+          <CardGrid
+            urlPrefix="adventure"
+            title={section.title}
+            list={section.list}
+            type={section.id}
+          />
+        ))
     }
   </div>
 </Layout>
-
-<script>
-  const tabs = document.getElementById("adventure-tabs");
-  const tabLinks = Array.from(tabs?.querySelectorAll("a.tab") ?? []);
-  const sections = tabLinks
-    .map((tab) => tab.getAttribute("href")?.slice(1))
-    .filter((sectionId): sectionId is string => Boolean(sectionId))
-    .map((sectionId) => document.getElementById(sectionId))
-    .filter(
-      (section): section is HTMLElement => section instanceof HTMLElement,
-    );
-
-  const setActiveTab = (sectionId: string) => {
-    tabLinks.forEach((tab) => {
-      const isActive = tab.getAttribute("href") === `#${sectionId}`;
-      tab.classList.toggle("tab-active", isActive);
-      tab.setAttribute("aria-selected", String(isActive));
-    });
-  };
-
-  const updateActiveTab = () => {
-    if (!tabs || sections.length === 0) return;
-
-    const activationOffset = tabs.getBoundingClientRect().height - 5;
-    let activeSection = sections[0];
-
-    sections.forEach((section) => {
-      if (section.getBoundingClientRect().top <= activationOffset) {
-        activeSection = section;
-      }
-    });
-
-    setActiveTab(activeSection.id);
-  };
-
-  tabs?.addEventListener("click", (event) => {
-    const clickedTab =
-      event.target instanceof Element ? event.target.closest("a.tab") : null;
-
-    if (!(clickedTab instanceof HTMLAnchorElement)) return;
-
-    const sectionId = clickedTab.getAttribute("href")?.slice(1);
-
-    if (!sectionId) return;
-
-    setActiveTab(sectionId);
-  });
-
-  window.addEventListener("scroll", updateActiveTab, { passive: true });
-  window.addEventListener("resize", updateActiveTab);
-  updateActiveTab();
-</script>

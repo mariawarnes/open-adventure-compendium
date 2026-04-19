@@ -25,6 +25,12 @@ const { filters, options } = Astro.props as Props;
       options={options.editions}
     />
 
+    <MultiSelect
+      name="theme"
+      selected={filters.selectedThemes}
+      options={options.themes}
+    />
+
     <SingleSelect
       name="duration"
       selected={filters.selectedDuration}

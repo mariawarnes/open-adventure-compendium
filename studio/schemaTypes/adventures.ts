@@ -27,6 +27,12 @@ export const adventures = defineType({
       hidden: true,
     }),
     defineField({
+      name: 'themes',
+      title: 'Theme',
+      type: 'reference',
+      to: [{type: 'themes'}],
+    }),
+    defineField({
       name: 'authors',
       title: 'Author(s)',
       type: 'array',
