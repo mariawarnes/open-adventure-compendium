@@ -1,0 +1,31 @@
+---
+import SinglePageHeader from "@/components/SinglePageHeader.astro";
+import Layout from "@/layouts/Layout.astro";
+import { getAdventure, getLocation } from "@/utils/sanity/functions";
+import type { Params } from "astro";
+
+export const prerender = false;
+
+const { adventureSlug, slug } = Astro.params as Params;
+
+if (!slug) {
+  throw new Error("Missing character slug");
+}
+
+const adventure = await getAdventure(adventureSlug);
+const location = await getLocation(slug);
+---
+
+<Layout title={location.name || ""}>
+  <SinglePageHeader
+    breadcrumbs={[
+      { url: "/", text: "Home" },
+      { url: "/adventure/" + adventure.slug.current, text: adventure.name },
+    ]}
+    title={location.name || ""}
+  >
+    <Fragment slot="subtitle">
+      <p>Location</p>
+    </Fragment>
+  </SinglePageHeader>
+</Layout>

@@ -1,0 +1,51 @@
+---
+import CardGrid from "@/components/CardGrid.astro";
+import PageTabs from "@/components/PageTabs";
+import SinglePageHeader from "@/components/SinglePageHeader.astro";
+import Layout from "@/layouts/Layout.astro";
+import { getAdventure, getEncounter } from "@/utils/sanity/functions";
+import type { Params } from "astro";
+
+export const prerender = false;
+
+const { adventureSlug, slug } = Astro.params as Params;
+
+if (!slug) {
+  throw new Error("Missing character slug");
+}
+
+const adventure = await getAdventure(adventureSlug);
+const encounter = await getEncounter(slug);
+
+const sections = [
+  { id: "entities", list: encounter.entities ?? [], title: "Entities" },
+];
+---
+
+<Layout title={encounter.name || ""}>
+  <SinglePageHeader
+    breadcrumbs={[
+      { url: "/", text: "Home" },
+      { url: "/adventure/" + adventure.slug.current, text: adventure.name },
+    ]}
+    title={encounter.name || ""}
+  >
+    <Fragment slot="subtitle">
+      <p>Encounter</p>
+    </Fragment>
+  </SinglePageHeader>
+  {sections.length > 0 && <PageTabs client:only sections={sections} />}
+  <div id="content" class="my-2">
+    {
+      sections.length > 0 &&
+        sections.map((section) => (
+          <CardGrid
+            urlPrefix={`adventure/${adventure.slug.current}`}
+            title={section.title}
+            list={section.list}
+            type={section.id}
+          />
+        ))
+    }
+  </div>
+</Layout>

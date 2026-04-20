@@ -14,6 +14,7 @@ import type {
   Author,
   Edition,
   Resource,
+  Theme,
 } from "./types";
 
 function resolveEnvValue(
@@ -76,7 +77,7 @@ export async function getAuthorsList(): Promise<Author[]> {
   );
 }
 
-export async function getThemesList(): Promise<Author[]> {
+export async function getThemesList(): Promise<Theme[]> {
   return await sanityClient.fetch(groq`*[_type == "themes"] | order(name asc)`);
 }
 
@@ -122,6 +123,24 @@ export async function getLocationsByAdventure(
     }`,
     {
       adventureSlug,
+    },
+  );
+}
+
+export async function getResourcesByCharacter(
+  slug: string,
+): Promise<Resource[]> {
+  return await sanityClient.fetch(
+    groq`*[_type == "resources" && subject->slug.current == $slug] {
+      name,
+      slug,
+      type,
+      url,
+      image,
+      attribution
+    }`,
+    {
+      slug,
     },
   );
 }

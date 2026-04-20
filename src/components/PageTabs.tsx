@@ -16,8 +16,8 @@ const PageTabs = ({ sections }: { sections: PageSection[] }) => {
 
   function getActiveTab() {
     const tabsBottom =
-      document.getElementById("adventure-tabs")?.getBoundingClientRect()
-        .bottom + 20;
+      (document.getElementById("adventure-tabs")?.getBoundingClientRect()
+        .bottom ?? 0) + 20;
 
     const scrolledPast = sections.filter(
       (section) =>
@@ -53,7 +53,7 @@ const PageTabs = ({ sections }: { sections: PageSection[] }) => {
     <div
       id="adventure-tabs"
       role="tablist"
-      className="tabs tabs-box sticky top-0 z-10 lg:hidden"
+      className={`tabs tabs-box sticky top-0 z-10 lg:hidden ${sections.length < 2 && "hidden"}`}
     >
       {sections.map((section) => (
         <a

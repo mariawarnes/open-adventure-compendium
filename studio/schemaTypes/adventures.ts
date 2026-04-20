@@ -150,7 +150,12 @@ export const adventures = defineType({
               name: 'slug',
               type: 'slug',
               options: {
-                source: (_doc, context) => context.parent?.name,
+                source: (_doc, context) => {
+                  const parent = context.parent
+                  return parent && !Array.isArray(parent) && typeof parent.name === 'string'
+                    ? parent.name
+                    : ''
+                },
               },
               validation: (rule) => rule.required(),
             }),

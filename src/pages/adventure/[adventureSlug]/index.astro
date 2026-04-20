@@ -15,19 +15,19 @@ import type { Params } from "astro";
 export async function getStaticPaths() {
   const adventures = await getAdventuresList();
   return adventures.map((adventure) => ({
-    params: { slug: adventure.slug?.current },
+    params: { adventureSlug: adventure.slug?.current },
   }));
 }
 
-const { slug } = Astro.params as Params;
+const { adventureSlug } = Astro.params as Params;
 
-if (!slug) {
+if (!adventureSlug) {
   throw new Error("Missing adventure slug");
 }
 
-const adventure = await getAdventure(slug);
-const characters = await getCharactersByAdventure(slug);
-const locations = await getLocationsByAdventure(slug);
+const adventure = await getAdventure(adventureSlug);
+const characters = await getCharactersByAdventure(adventureSlug);
+const locations = await getLocationsByAdventure(adventureSlug);
 
 const recommendedLevels = (adventure.recommendedLevels ?? [])
   .map((level) => Number(level))

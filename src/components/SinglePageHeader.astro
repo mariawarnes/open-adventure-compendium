@@ -1,12 +1,37 @@
 ---
-interface Props {
-  title: string;
+interface Link {
+  url?: string;
+  text: string;
 }
 
-const { title } = Astro.props as Props;
+interface Props {
+  title: string;
+  breadcrumbs?: Link[];
+}
+
+const { title, breadcrumbs } = Astro.props as Props;
 ---
 
-<section class="flex px-4 py-6 md:py-18 scroll-mt-24 flex-col items-center">
+<div class="flex px-4 py-6 md:py-18 scroll-mt-24 flex-col items-center">
+  {
+    breadcrumbs && (
+      <>
+        <div class="breadcrumbs text-sm opacity-70">
+          <ul class="mb-4">
+            {breadcrumbs.map((breadcrumb) => (
+              <li>
+                {breadcrumb.url ? (
+                  <a href={breadcrumb.url}>{breadcrumb.text}</a>
+                ) : (
+                  breadcrumb.text
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </>
+    )
+  }
   <h2 class="font-bold text-2xl md:text-4xl mb-2">{title}</h2>
   <slot name="subtitle" />
-</section>
+</div>

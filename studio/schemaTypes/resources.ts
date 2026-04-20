@@ -86,7 +86,8 @@ export const resources = defineType({
       to: [{type: 'entities'}, {type: 'characters'}, {type: 'locations'}],
       validation: (rule) =>
         rule.custom((value, context) => {
-          const type = context.document?.type
+          const type =
+            typeof context.document?.type === 'string' ? context.document.type : undefined
           const requiresSubject = [
             'map',
             'soundboard',
@@ -98,7 +99,7 @@ export const resources = defineType({
             'landscape',
           ]
 
-          if (requiresSubject.includes(type) && !value?._ref) {
+          if (type && requiresSubject.includes(type) && !value?._ref) {
             return 'This field is required for subject-specific resources'
           }
 
