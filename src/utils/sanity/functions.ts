@@ -13,6 +13,7 @@ import type {
   AdventureLocation,
   Author,
   Edition,
+  Entity,
   Resource,
   Theme,
 } from "./types";
@@ -57,6 +58,71 @@ const builder = createImageUrlBuilder({
 export function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
+
+const resourceFields = `
+  _id,
+  name,
+  type,
+  material,
+  platform,
+  url,
+  image,
+  attribution
+`;
+
+const encounterLocationProjection = `
+  _id,
+  _type,
+  slug,
+  name,
+  "entity": select(
+    _type == "locations" && defined(entity) => entity->{
+      _id,
+      _type,
+      name,
+      slug
+    },
+    _type == "entities" => {
+      _id,
+      _type,
+      name,
+      slug
+    },
+    null
+  ),
+  "resources": *[
+    _type == "resources" &&
+    (
+      subject._ref == ^._id ||
+      subject._ref == ^.entity._ref
+    )
+  ] | order(name asc) {
+    ${resourceFields}
+  }
+`;
+
+const encounterEntityProjection = `
+  _key,
+  _type,
+  quantity,
+  "name": entity->name,
+  "slug": entity->slug,
+  "entity": entity->{
+    _id,
+    _type,
+    name,
+    slug,
+    "resources": *[
+      _type == "resources" &&
+      (
+        subject._ref == ^._id ||
+        subject._ref == ^.entity._ref
+      )
+    ] | order(name asc) {
+      ${resourceFields}
+    }
+  }
+`;
 
 export async function getEditionsList(): Promise<Edition[]> {
   return await sanityClient.fetch(
@@ -131,14 +197,36 @@ export async function getResourcesByCharacter(
   slug: string,
 ): Promise<Resource[]> {
   return await sanityClient.fetch(
-    groq`*[_type == "resources" && subject->slug.current == $slug] {
-      name,
+    groq`*[_type == "characters" && slug.current == $slug][0]{
+      "resources": *[
+        _type == "resources" &&
+        (
+          subject._ref == ^._id ||
+          subject._ref == ^.entity._ref
+        )
+      ] | order(name asc) {
+        ${resourceFields}
+      }
+    }.resources`,
+    {
       slug,
-      type,
-      url,
-      image,
-      attribution
-    }`,
+    },
+  );
+}
+
+export async function getResourcesByEntity(slug: string): Promise<Resource[]> {
+  return await sanityClient.fetch(
+    groq`*[_type == "entities" && slug.current == $slug][0]{
+      "resources": *[
+        _type == "resources" &&
+        (
+          subject._ref == ^._id ||
+          subject._ref == ^.entity._ref
+        )
+      ] | order(name asc) {
+        ${resourceFields}
+      }
+    }.resources`,
     {
       slug,
     },
@@ -147,7 +235,18 @@ export async function getResourcesByCharacter(
 
 export async function getEncounter(slug: string): Promise<AdventureEncounter> {
   return await sanityClient.fetch(
-    groq`(*[_type == "adventures"].encounters[])[slug.current == $slug][0]`,
+    groq`(*[_type == "adventures"].encounters[])[slug.current == $slug][0]{
+        _key,
+        _type,
+        slug,
+        name,
+        locations[]->{
+          ${encounterLocationProjection}
+        },
+        entities[]{
+          ${encounterEntityProjection}
+        }
+    }`,
     {
       slug,
     },
@@ -166,6 +265,15 @@ export async function getLocation(slug: string): Promise<AdventureLocation> {
 export async function getCharacter(slug: string): Promise<AdventureCharacter> {
   return await sanityClient.fetch(
     groq`*[_type == "characters"][slug.current == $slug][0]`,
+    {
+      slug,
+    },
+  );
+}
+
+export async function getEntity(slug: string): Promise<Entity> {
+  return await sanityClient.fetch(
+    groq`*[_type == "entities"][slug.current == $slug][0]`,
     {
       slug,
     },
@@ -193,9 +301,7 @@ export async function getAdventuresList(
   }
 
   if (selectedThemes.length > 0) {
-    conditions.push(
-      `count((themes[]->slug.current)[@ in $selectedThemes]) > 0`,
-    );
+    conditions.push(`themes->slug.current in $selectedThemes`);
     params.selectedThemes = selectedThemes;
   }
 
@@ -226,7 +332,7 @@ export async function getAdventuresList(
   return await sanityClient.fetch(
     groq`
       *[${conditions.join(" && ")}] | order(_createdAt desc) {
-        _key,
+        _id,
         _type,
         name,
         slug,
@@ -236,17 +342,18 @@ export async function getAdventuresList(
         recommendedLevels,
         recommendedPartySize,
         "authors": authors[]->{
-          _key,
+          _id,
           name,
           slug
         },
-        "theme": theme[]->{
-          _key,
+        "themes": themes->{
+          _id,
           name,
-          slug
+          slug,
+          description
         },
         "edition": edition[]->{
-          _key,
+          _id,
           name,
           slug
         },
@@ -262,11 +369,16 @@ export async function getAdventure(slug: string): Promise<Adventure> {
   return await sanityClient.fetch(
     groq`
     *[_type == "adventures" && slug.current == $slug][0] {
-      _key,
+      _id,
       _type,
       name,
       slug,
-      theme,
+      "themes": themes->{
+        _id,
+        slug,
+        name,
+        description
+      },
       publishedAt,
       website,
       campaignGuide,
@@ -274,12 +386,12 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       recommendedLevels,
       recommendedPartySize,
       "edition": edition[]->{
-        _key,
+        _id,
         slug,
         name
       },
       "authors": authors[]->{
-        _key,
+        _id,
         slug,
         name
       },
@@ -291,46 +403,10 @@ export async function getAdventure(slug: string): Promise<Adventure> {
         slug,
         name,
         locations[]->{
-          _id,
-          _key,
-          slug,
-          name,
-          entity->{
-            _id,
-            name,
-            slug,
-            kind
-          },
-          "resources": *[
-            _type == "resources" &&
-            (
-              subject._ref == ^._id ||
-              entity._ref == ^._id ||
-              location._ref == ^._id
-            )
-          ]{ _id, type, url, attribution, image }
+          ${encounterLocationProjection}
         },
         entities[]{
-          _key,
-          _type,
-          name,
-          slug,
-          quantity,
-          entity->{
-            _id,
-            _key,
-            name,
-            slug,
-            kind,
-            "resources": *[
-              _type == "resources" &&
-              (
-                subject._ref == ^._id ||
-                entity._ref == ^._id ||
-                location._ref == ^._id
-              )
-            ]{ _id, type, url, attribution, image }
-          }
+          ${encounterEntityProjection}
         }
       }
     }`,

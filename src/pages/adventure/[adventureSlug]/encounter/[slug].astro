@@ -10,6 +10,10 @@ export const prerender = false;
 
 const { adventureSlug, slug } = Astro.params as Params;
 
+if (!adventureSlug) {
+  throw new Error("Missing adventure slug");
+}
+
 if (!slug) {
   throw new Error("Missing character slug");
 }
@@ -18,7 +22,24 @@ const adventure = await getAdventure(adventureSlug);
 const encounter = await getEncounter(slug);
 
 const sections = [
-  { id: "entities", list: encounter.entities ?? [], title: "Entities" },
+  {
+    id: "entities",
+    list: encounter.entities ?? [],
+    title: "Creatures",
+    getText: (item) => `Qty: ${item.quantity}`,
+    getHref: (item) =>
+      item.entity._type == "entities"
+        ? `/entity/${item.slug.current}`
+        : `/adventure/${adventure.slug.current}/character/${item.slug.current}`,
+  },
+  {
+    id: "location",
+    list: encounter.locations ?? [],
+    title: "Locations",
+    getText: (item) => ``,
+    getHref: (item) =>
+      `/adventure/${adventure.slug.current}/location/${item.slug.current}`,
+  },
 ];
 ---
 
@@ -27,6 +48,10 @@ const sections = [
     breadcrumbs={[
       { url: "/", text: "Home" },
       { url: "/adventure/" + adventure.slug.current, text: adventure.name },
+      {
+        url: "/adventure/" + adventure.slug.current + "#encounters",
+        text: "Encounters",
+      },
     ]}
     title={encounter.name || ""}
   >
@@ -40,10 +65,11 @@ const sections = [
       sections.length > 0 &&
         sections.map((section) => (
           <CardGrid
-            urlPrefix={`adventure/${adventure.slug.current}`}
+            getHref={section.getHref}
             title={section.title}
             list={section.list}
             type={section.id}
+            getText={section.getText}
           />
         ))
     }

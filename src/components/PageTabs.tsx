@@ -1,13 +1,8 @@
-import type {
-  AdventureCharacter,
-  AdventureEncounter,
-  AdventureLocation,
-} from "@/utils/sanity/types";
 import { useEffect, useState } from "react";
 
 interface PageSection {
   id: string;
-  list: AdventureEncounter[] | AdventureLocation[] | AdventureCharacter[];
+  list: unknown[];
   title: string;
 }
 

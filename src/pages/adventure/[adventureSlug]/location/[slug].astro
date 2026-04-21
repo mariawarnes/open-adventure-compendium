@@ -8,6 +8,10 @@ export const prerender = false;
 
 const { adventureSlug, slug } = Astro.params as Params;
 
+if (!adventureSlug) {
+  throw new Error("Missing adventure slug");
+}
+
 if (!slug) {
   throw new Error("Missing character slug");
 }

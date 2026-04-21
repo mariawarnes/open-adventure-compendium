@@ -2,15 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Astro: Server",
-      "type": "pwa-node",
+      "name": "Astro: Development server",
+      "type": "node-terminal",
       "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/node_modules/astro/bin/astro.mjs",
-      "args": ["dev", "--config", "astro.config.mjs"],
-      "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"],
-      "sourceMaps": true
+      "command": "npm run astro -- dev --config astro.config.mjs --port 4321"
+    },
+    {
+      "name": "Astro: Build",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run astro -- build --config astro.config.mjs"
     },
     {
       "name": "Astro: Chrome",
@@ -19,29 +20,6 @@
       "url": "http://localhost:4321",
       "webRoot": "${workspaceFolder}",
       "sourceMaps": true
-    },
-    {
-      "name": "Astro: Full Stack",
-      "type": "pwa-node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/node_modules/astro/bin/astro.mjs",
-      "args": ["dev", "--config", "astro.config.mjs"],
-      "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"],
-      "sourceMaps": true,
-      "serverReadyAction": {
-        "action": "debugWithChrome",
-        "pattern": "http://localhost:(\\d+)",
-        "uriFormat": "http://localhost:%s",
-        "webRoot": "${workspaceFolder}"
-      }
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Astro: Server + Chrome",
-      "configurations": ["Astro: Server", "Astro: Chrome"]
     }
   ]
 }

@@ -59,6 +59,7 @@ export interface AdventureEncounterEntity {
   _type: string;
   entity: Entity | AdventureCharacter;
   name?: string;
+  slug?: Slug;
   quantity: number;
 }
 
@@ -66,12 +67,14 @@ export interface AdventureEncounter {
   _key: string;
   _type: string;
   name?: string;
+  slug?: Slug;
   locations?: AdventureLocation[];
   entities?: AdventureEncounterEntity[];
 }
 
 export interface Adventure {
-  _key: string;
+  _id?: string;
+  _key?: string;
   _type: "adventures";
   name: string;
   slug: Slug;
@@ -83,6 +86,7 @@ export interface Adventure {
   edition: Edition[];
   authorSlugs?: string[];
   editionSlugs?: string[];
+  themes?: Theme | null;
   recommendedLevels?: AdventureRecommendedLevel[];
   recommendedPartySize?: AdventurePartySize[];
   encounters?: AdventureEncounter[];
@@ -91,19 +95,22 @@ export interface Adventure {
 }
 
 export interface Author {
+  _id?: string;
   _key?: string;
   name: string;
   slug: Slug;
 }
 
 export interface Edition {
-  _key: string;
+  _id?: string;
+  _key?: string;
   name: string;
   slug: Slug;
 }
 
 export interface Theme {
-  _key: string;
+  _id?: string;
+  _key?: string;
   name: string;
   slug: Slug;
 }
@@ -163,7 +170,8 @@ export interface Setting {
 }
 
 export interface Theme {
-  _key: string;
+  _id?: string;
+  _key?: string;
   name: string;
   slug: Slug;
   description?: string;

@@ -34,9 +34,27 @@ const recommendedLevels = (adventure.recommendedLevels ?? [])
   .filter((level) => Number.isFinite(level));
 
 const sections = [
-  { id: "encounters", list: adventure.encounters ?? [], title: "Encounters" },
-  { id: "locations", list: locations ?? [], title: "Locations" },
-  { id: "characters", list: characters ?? [], title: "Characters" },
+  {
+    id: "encounters",
+    list: adventure.encounters ?? [],
+    title: "Encounters",
+    getHref: (item) =>
+      `/adventure/${adventure.slug.current}/encounter/${item.slug.current}`,
+  },
+  {
+    id: "locations",
+    list: locations ?? [],
+    title: "Locations",
+    getHref: (item) =>
+      `/adventure/${adventure.slug.current}/location/${item.slug.current}`,
+  },
+  {
+    id: "characters",
+    list: characters ?? [],
+    title: "Characters",
+    getHref: (item) =>
+      `/adventure/${adventure.slug.current}/character/${item.slug.current}`,
+  },
 ];
 ---
 
@@ -88,7 +106,7 @@ const sections = [
       sections.length > 0 &&
         sections.map((section) => (
           <CardGrid
-            urlPrefix={`adventure/${adventure.slug.current}`}
+            getHref={section.getHref}
             title={section.title}
             list={section.list}
             type={section.id}

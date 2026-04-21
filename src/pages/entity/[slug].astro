@@ -4,28 +4,22 @@ import SinglePageHeader from "@/components/SinglePageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import { getDomainLabel, toTitleCase } from "@/utils/functions";
 import {
-  getAdventure,
-  getCharacter,
-  getResourcesByCharacter,
+  getEntity,
+  getResourcesByEntity,
   urlFor,
 } from "@/utils/sanity/functions";
 import type { Params } from "astro";
 
 export const prerender = false;
 
-const { adventureSlug, slug } = Astro.params as Params;
-
-if (!adventureSlug) {
-  throw new Error("Missing adventure slug");
-}
+const { slug } = Astro.params as Params;
 
 if (!slug) {
-  throw new Error("Missing character slug");
+  throw new Error("Missing entity slug");
 }
 
-const adventure = await getAdventure(adventureSlug);
-const character = await getCharacter(slug);
-const resources = await getResourcesByCharacter(slug);
+const entity = await getEntity(slug);
+const resources = await getResourcesByEntity(slug);
 
 const resourceTypes = [
   ...new Set(resources.flatMap((resource) => resource.type)),
@@ -46,25 +40,17 @@ const sections = [
     title: toTitleCase(type),
     getHref: (item) =>
       item.url ? item.url : item.image ? urlFor(item.image) : "",
-    getText: (item) => item?.subject?.name ?? "",
   })),
 ][0];
 ---
 
-<Layout title={character.name || ""}>
+<Layout title={entity.name || ""}>
   <SinglePageHeader
-    breadcrumbs={[
-      { url: "/", text: "Home" },
-      { url: "/adventure/" + adventure.slug.current, text: adventure.name },
-      {
-        url: "/adventure/" + adventure.slug.current + "#characters",
-        text: "Characters",
-      },
-    ]}
-    title={character.name || ""}
+    breadcrumbs={[{ url: "/", text: "Home" }]}
+    title={entity.name || ""}
   >
     <Fragment slot="subtitle">
-      <p>Character</p>
+      <p>Entity</p>
     </Fragment>
   </SinglePageHeader>
 
@@ -74,7 +60,6 @@ const sections = [
         sections.map((section) => (
           <CardGrid
             getHref={section.getHref}
-            getText={section.getText}
             title={section.title}
             list={section.list}
             type={section.id}
