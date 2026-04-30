@@ -30,6 +30,25 @@ export const entities = defineType({
       options: {source: 'name'},
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: 'adapted',
+      title: 'Is Adapted?',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'baseEntity',
+      title: 'Base Entity',
+      type: 'reference',
+      to: [{type: 'entities'}],
+      hidden: ({document}) => document?.adapted === false,
+    }),
+    defineField({
+      name: 'adaptations',
+      title: 'Adaptations',
+      type: 'text',
+      hidden: ({document}) => document?.adapted === false,
+    }),
   ],
   preview: {
     select: {

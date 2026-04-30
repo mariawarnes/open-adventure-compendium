@@ -2,15 +2,18 @@
 export const prerender = false;
 
 import Card from "@/components/Card.astro";
-import SearchFilter from "@/components/SearchFilter.astro";
+import SearchFilter from "@/components/SearchFilter.tsx";
 import Layout from "@/layouts/Layout.astro";
 import "@/styles/global.css";
+import { toTitleCase } from "@/utils/functions";
 
 import {
   getAdventuresList,
   getAuthorsList,
   getDurationList,
   getEditionsList,
+  getLevelsList,
+  getPartySizeList,
   getThemesList,
 } from "@/utils/sanity/functions";
 import type {
@@ -32,12 +35,8 @@ const selectedAuthors = getSelectedValues("author");
 const selectedEditions = getSelectedValues("edition");
 const selectedThemes = getSelectedValues("theme");
 const selectedDuration = Astro.url.searchParams.get("duration")?.trim() ?? "";
-const selectedLevels = getSelectedValues(
-  "level",
-) as AdventureRecommendedLevel[];
-const selectedPartySizes = getSelectedValues(
-  "partySize",
-) as AdventurePartySize[];
+const selectedLevels = getSelectedValues("level") as string[];
+const selectedPartySizes = getSelectedValues("partySize") as string[];
 
 const filters: AdventureFilters = {
   selectedAuthors,
@@ -50,46 +49,29 @@ const filters: AdventureFilters = {
   selectedPartySizes,
 };
 
-const [authors, editions, themes, duration, adventures] = await Promise.all([
-  getAuthorsList(),
-  getEditionsList(),
-  getThemesList(),
-  getDurationList(),
-  getAdventuresList(filters),
-]);
+const [authors, editions, themes, duration, levels, partySizes, adventures] =
+  await Promise.all([
+    getAuthorsList(),
+    getEditionsList(),
+    getThemesList(),
+    getDurationList(),
+    getLevelsList(),
+    getPartySizeList(),
+    getAdventuresList(filters),
+  ]);
 
 const options: AdventureOptions = {
   authors,
   editions,
   themes,
   duration,
-  levels: [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-    "14",
-    "15",
-    "16",
-    "17",
-    "18",
-    "19",
-    "20",
-  ],
-  partySizes: ["1", "2", "3", "4", "5", "6", "7", "8"],
+  levels,
+  partySizes,
 };
 ---
 
 <Layout title="Search">
-  <SearchFilter filters={filters} options={options} />
+  <SearchFilter client:load filters={filters} options={options} />
 
   {
     adventures.length === 0 ? (
@@ -99,11 +81,13 @@ const options: AdventureOptions = {
         {adventures.map((adventure: Adventure) => (
           <Card
             title={adventure.name}
+            icon={adventure.icon}
             text={
-              adventure.duration +
-              " by " +
+              toTitleCase(adventure.duration) +
+              " adventure by " +
               adventure.authors?.map((a) => a.name).join(", ")
             }
+            tags={adventure.themes ? adventure.themes : undefined}
             button={{
               url: "/adventure/" + adventure.slug.current,
               text: "Explore",

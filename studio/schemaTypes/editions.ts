@@ -18,5 +18,9 @@ export const editions = defineType({
       options: {source: 'name'},
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: 'longName',
+      type: 'string',
+    }),
   ],
 })

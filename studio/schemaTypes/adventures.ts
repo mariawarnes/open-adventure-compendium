@@ -20,6 +20,11 @@ export const adventures = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      title: 'Icon',
+      name: 'icon',
+      type: 'iconPicker',
+    }),
+    defineField({
       name: 'publishedAt',
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
@@ -29,8 +34,18 @@ export const adventures = defineType({
     defineField({
       name: 'themes',
       title: 'Theme',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'themes'}],
+        },
+      ],
+    }),
+    defineField({
+      name: 'setting',
       type: 'reference',
-      to: [{type: 'themes'}],
+      to: [{type: 'settings'}],
     }),
     defineField({
       name: 'authors',
@@ -66,14 +81,9 @@ export const adventures = defineType({
     }),
     defineField({
       name: 'edition',
-      title: 'Compatible Game Edition(s)*',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'editions'}],
-        },
-      ],
+      title: 'Edition created for*',
+      type: 'reference',
+      to: [{type: 'editions'}],
       validation: (rule) => rule.required(),
     }),
     defineField({

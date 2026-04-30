@@ -1,4 +1,9 @@
 ---
+import type {
+  SanityIcon as SanityIconValue,
+  Theme,
+} from "@/utils/sanity/types";
+
 interface Action {
   url: string;
   text: string;
@@ -9,19 +14,34 @@ interface Props {
   title: string;
   text?: string;
   button?: Action;
+  tags?: Theme[];
+  icon?: SanityIconValue | null;
 }
 
-const { title, text, button } = Astro.props as Props;
+const { title, text, button, tags, icon } = Astro.props as Props;
 const action = button && {
   ...button,
   type: button.type ?? "primary",
 };
 ---
 
-<div class="card border-base-300 border bg-base-100 card-md shadow-sm">
+<div
+  class="card relative overflow-hidden border-base-300 border bg-base-100 card-md shadow-sm"
+>
   <div class="card-body justify-between">
-    <h2 class="card-title">{title}</h2>
-    {text && <p>{text}</p>}
+    <h2 class="card-title text-pretty">{title}</h2>
+
+    {text && <p class="text-pretty">{text}</p>}
+
+    {
+      tags && (
+        <div class="flex flex-row gap-2">
+          {tags.map((tag) => (
+            <div class="badge bg-secondary">{tag.name}</div>
+          ))}
+        </div>
+      )
+    }
 
     {
       action && (

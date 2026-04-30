@@ -1,5 +1,6 @@
 import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
+import {iconPicker} from 'sanity-plugin-icon-picker'
 import {structureTool} from 'sanity/structure'
 import {schemaTypes} from './schemaTypes'
 
@@ -17,7 +18,7 @@ export default defineConfig({
   title: 'open-adventure-compendium',
   projectId,
   dataset,
-  plugins: [structureTool(), visionTool()],
+  plugins: [structureTool(), visionTool(), iconPicker()],
   schema: {
     types: schemaTypes,
   },

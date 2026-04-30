@@ -1,11 +1,19 @@
-export function toTitleCase(str: string) {
+export function toTitleCase(str?: string | null) {
+  if (!str) {
+    return "";
+  }
+
   return str.replace(
     /\w\S*/g,
     (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase(),
   );
 }
 
-export function getDomainLabel(url: string): string | null {
+export function getDomainLabel(url?: string | null): string | null {
+  if (!url) {
+    return null;
+  }
+
   let hostname: string;
 
   try {

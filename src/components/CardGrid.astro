@@ -5,6 +5,7 @@ import Card from "./Card.astro";
 type CardGridItem = {
   name?: string;
   slug?: Slug;
+  tags: string[];
   [key: string]: undefined;
 };
 
@@ -53,6 +54,7 @@ const getButton = (item: CardGridItem | undefined) => {
           title={item.name ?? ""}
           text={getText?.(item) || undefined}
           button={getButton(item)}
+          tags={item.themes ?? item.themes}
         />
       ))
     }

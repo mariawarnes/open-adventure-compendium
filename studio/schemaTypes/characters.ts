@@ -1,11 +1,11 @@
-import {ComponentIcon} from '@sanity/icons'
+import {UsersIcon} from '@sanity/icons'
 import {defineField, defineType} from 'sanity'
 
 export const characters = defineType({
   name: 'characters',
   title: 'Characters',
   type: 'document',
-  icon: ComponentIcon,
+  icon: UsersIcon,
   fields: [
     defineField({
       name: 'name',
@@ -24,6 +24,7 @@ export const characters = defineType({
       title: 'Adventure*',
       type: 'reference',
       to: [{type: 'adventures'}],
+      weak: true,
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -32,6 +33,18 @@ export const characters = defineType({
       description: 'Optional reusable template, such as Male Human Wizard.',
       type: 'reference',
       to: [{type: 'entities'}],
+    }),
+    defineField({
+      name: 'adapted',
+      title: 'Is Adapted?',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'adaptations',
+      title: 'Adaptations',
+      type: 'text',
+      hidden: ({document}) => document?.adapted === false,
     }),
   ],
   preview: {

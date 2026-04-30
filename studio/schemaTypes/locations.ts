@@ -24,6 +24,7 @@ export const locations = defineType({
       title: 'Adventure*',
       type: 'reference',
       to: [{type: 'adventures'}],
+      weak: true,
       validation: (rule) => rule.required(),
     }),
     defineField({

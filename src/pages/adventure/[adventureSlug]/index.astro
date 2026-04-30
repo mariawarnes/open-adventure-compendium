@@ -1,23 +1,18 @@
 ---
+export const prerender = false;
+
 import Card from "@/components/Card.astro";
 import CardGrid from "@/components/CardGrid.astro";
 import PageTabs from "@/components/PageTabs.tsx";
 import SinglePageHeader from "@/components/SinglePageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
+import { toTitleCase } from "@/utils/functions";
 import {
   getAdventure,
-  getAdventuresList,
   getCharactersByAdventure,
   getLocationsByAdventure,
 } from "@/utils/sanity/functions";
 import type { Params } from "astro";
-
-export async function getStaticPaths() {
-  const adventures = await getAdventuresList();
-  return adventures.map((adventure) => ({
-    params: { adventureSlug: adventure.slug?.current },
-  }));
-}
 
 const { adventureSlug } = Astro.params as Params;
 
@@ -52,17 +47,24 @@ const sections = [
     id: "characters",
     list: characters ?? [],
     title: "Characters",
+    getText: (item) => item.entity.name,
     getHref: (item) =>
       `/adventure/${adventure.slug.current}/character/${item.slug.current}`,
   },
-];
+].filter((section) => section.list.length > 0);
 ---
 
 <Layout title={adventure.name}>
-  <SinglePageHeader title={adventure.name}>
+  <SinglePageHeader title={adventure.name} icon={adventure.icon}>
     <Fragment slot="subtitle">
       <p>
-        {adventure.edition?.map((e) => e.name).join(", ")}
+        {
+          adventure.edition && (
+            <abbr title={adventure.edition.longName}>
+              {adventure.edition.name}
+            </abbr>
+          )
+        }
         {
           recommendedLevels.length > 0 && (
             <>
@@ -73,7 +75,7 @@ const sections = [
           )
         }
         &#x2022;
-        {adventure.duration}
+        {toTitleCase(adventure.duration) + " adventure"}
       </p>
 
       <p>

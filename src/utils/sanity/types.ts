@@ -72,23 +72,31 @@ export interface AdventureEncounter {
   entities?: AdventureEncounterEntity[];
 }
 
+export interface SanityIcon {
+  _type: "iconPicker";
+  provider: string;
+  name: string;
+  svg?: string;
+}
+
 export interface Adventure {
   _id?: string;
   _key?: string;
   _type: "adventures";
   name: string;
   slug: Slug;
+  icon?: SanityIcon | null;
   publishedAt: string;
   authors?: Author[];
   duration: AdventureDuration;
   website?: string;
   campaignGuide: string;
-  edition: Edition[];
+  edition?: Edition | null;
   authorSlugs?: string[];
   editionSlugs?: string[];
-  themes?: Theme | null;
-  recommendedLevels?: AdventureRecommendedLevel[];
-  recommendedPartySize?: AdventurePartySize[];
+  themes?: Theme[] | null;
+  recommendedLevels?: string[];
+  recommendedPartySize?: string[];
   encounters?: AdventureEncounter[];
   characters?: AdventureCharacter[];
   locations?: AdventureLocation[];
@@ -105,6 +113,7 @@ export interface Edition {
   _id?: string;
   _key?: string;
   name: string;
+  longName?: string;
   slug: Slug;
 }
 
@@ -182,8 +191,8 @@ export interface AdventureOptions {
   editions: Edition[];
   themes: Theme[];
   duration: AdventureDuration[];
-  levels: AdventureRecommendedLevel[];
-  partySizes: AdventurePartySize[];
+  levels: string[];
+  partySizes: string[];
 }
 
 export interface AdventureFilters {
@@ -191,6 +200,6 @@ export interface AdventureFilters {
   selectedEditions?: string[];
   selectedThemes?: string[];
   selectedDuration?: AdventureDuration[];
-  selectedLevels?: AdventureRecommendedLevel[];
-  selectedPartySizes?: AdventurePartySize[];
+  selectedLevels?: string[];
+  selectedPartySizes?: string[];
 }

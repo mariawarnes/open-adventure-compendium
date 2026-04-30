@@ -65,6 +65,12 @@ const resourceFields = `
   type,
   material,
   platform,
+  "subject": subject->{
+    _id,
+    _type,
+    name,
+    slug
+  },
   url,
   image,
   attribution
@@ -126,7 +132,7 @@ const encounterEntityProjection = `
 
 export async function getEditionsList(): Promise<Edition[]> {
   return await sanityClient.fetch(
-    groq`*[_type == "editions"] | order(name asc) {
+    groq`*[_type == "editions" && count(*[_type == "adventures" && edition._ref == ^._id]) > 0] | order(name asc) {
       name,
       slug
     }`,
@@ -139,12 +145,32 @@ export async function getDurationList(): Promise<AdventureDuration[]> {
 
 export async function getAuthorsList(): Promise<Author[]> {
   return await sanityClient.fetch(
-    groq`*[_type == "authors"] | order(name asc)`,
+    groq`*[_type == "authors" && count(*[_type == "adventures" && ^._id in authors[]._ref]) > 0] | order(name asc)`,
   );
 }
 
 export async function getThemesList(): Promise<Theme[]> {
-  return await sanityClient.fetch(groq`*[_type == "themes"] | order(name asc)`);
+  return await sanityClient.fetch(
+    groq`*[_type == "themes" && count(*[_type == "adventures" && ^._id in themes[]._ref]) > 0] | order(name asc)`,
+  );
+}
+
+export async function getLevelsList(): Promise<string[]> {
+  return await sanityClient.fetch(
+    groq`array::unique(*[
+      _type == "adventures" &&
+      defined(recommendedLevels)
+    ].recommendedLevels[]) | order(@ asc)`,
+  );
+}
+
+export async function getPartySizeList(): Promise<string[]> {
+  return await sanityClient.fetch(
+    groq`array::unique(*[
+      _type == "adventures" &&
+      defined(recommendedPartySize)
+    ].recommendedPartySize[]) | order(@ asc)`,
+  );
 }
 
 export async function getResourcesList(): Promise<Resource[]> {
@@ -301,14 +327,14 @@ export async function getAdventuresList(
   }
 
   if (selectedThemes.length > 0) {
-    conditions.push(`themes->slug.current in $selectedThemes`);
+    conditions.push(
+      `count((themes[]->slug.current)[@ in $selectedThemes]) > 0`,
+    );
     params.selectedThemes = selectedThemes;
   }
 
   if (selectedEditions.length > 0) {
-    conditions.push(
-      `count((edition[]->slug.current)[@ in $selectedEditions]) > 0`,
-    );
+    conditions.push(`edition->slug.current in $selectedEditions`);
     params.selectedEditions = selectedEditions;
   }
 
@@ -336,6 +362,12 @@ export async function getAdventuresList(
         _type,
         name,
         slug,
+        icon{
+          _type,
+          provider,
+          name,
+          svg
+        },
         publishedAt,
         duration,
         website,
@@ -346,19 +378,20 @@ export async function getAdventuresList(
           name,
           slug
         },
-        "themes": themes->{
+        "themes": themes[]->{
           _id,
           name,
           slug,
           description
         },
-        "edition": edition[]->{
+        "edition": edition->{
           _id,
           name,
-          slug
+          slug,
+          longName
         },
         "authorSlugs": authors[]->slug.current,
-        "editionSlugs": edition[]->slug.current
+        "editionSlugs": select(defined(edition) => [edition->slug.current], [])
       }
     `,
     params,
@@ -373,7 +406,13 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       _type,
       name,
       slug,
-      "themes": themes->{
+      icon{
+        _type,
+        provider,
+        name,
+        svg
+      },
+      "themes": themes[]->{
         _id,
         slug,
         name,
@@ -385,10 +424,11 @@ export async function getAdventure(slug: string): Promise<Adventure> {
       duration,
       recommendedLevels,
       recommendedPartySize,
-      "edition": edition[]->{
+      edition->{
         _id,
         slug,
-        name
+        name,
+        longName
       },
       "authors": authors[]->{
         _id,
@@ -396,7 +436,7 @@ export async function getAdventure(slug: string): Promise<Adventure> {
         name
       },
       "authorSlugs": authors[]->slug.current,
-      "editionSlugs": edition[]->slug.current,
+      "editionSlugs": select(defined(edition) => [edition->slug.current], []),
       encounters[]{
         _key,
         _type,

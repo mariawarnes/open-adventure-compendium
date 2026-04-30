@@ -39,14 +39,15 @@ const sections = [
         .filter((resource) => resource.type == type)
         .map((resource) => ({
           ...resource,
-          name: resource.url
-            ? `${toTitleCase(getDomainLabel(resource.url)) ?? ""} ${toTitleCase(resource.type)}`.trim()
-            : toTitleCase(resource.type),
+          name:
+            resource.url || resource.attribution
+              ? `${toTitleCase(getDomainLabel(resource.url || resource.attribution)) ?? ""} ${toTitleCase(resource.type)}`.trim()
+              : toTitleCase(resource.type),
         })) ?? [],
     title: toTitleCase(type),
     getHref: (item) =>
       item.url ? item.url : item.image ? urlFor(item.image) : "",
-    getText: (item) => item?.subject?.name ?? "",
+    getText: (item) => (item.subject ? item.subject.name : ""),
   })),
 ][0];
 ---
