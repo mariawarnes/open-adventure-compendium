@@ -56,7 +56,11 @@ const site = resolveSiteUrl(
 // https://astro.build/config
 export default defineConfig({
   site,
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
   integrations: [
     react(), // Required for Sanity Studio
     ...(site ? [sitemap()] : []),
