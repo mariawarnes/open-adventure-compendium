@@ -18,6 +18,12 @@ import type {
   Theme,
 } from "./types";
 
+declare const process:
+  | {
+      env?: Record<string, string | undefined>;
+    }
+  | undefined;
+
 function resolveEnvValue(
   ...values: Array<string | undefined>
 ): string | undefined {
@@ -32,14 +38,38 @@ function resolveEnvValue(
   return undefined;
 }
 
-const projectId = resolveEnvValue(import.meta.env.SANITY_STUDIO_PROJECT_ID);
+const env = typeof process !== "undefined" ? process.env : {};
+
+const projectId = resolveEnvValue(
+  import.meta.env.SANITY_STUDIO_PROJECT_ID,
+  import.meta.env.SANITY_PROJECT_ID,
+  import.meta.env.PUBLIC_SANITY_STUDIO_PROJECT_ID,
+  import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  import.meta.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  env?.SANITY_STUDIO_PROJECT_ID,
+  env?.SANITY_PROJECT_ID,
+  env?.PUBLIC_SANITY_STUDIO_PROJECT_ID,
+  env?.PUBLIC_SANITY_PROJECT_ID,
+  env?.NEXT_PUBLIC_SANITY_PROJECT_ID,
+);
 
 const dataset =
-  resolveEnvValue(import.meta.env.SANITY_STUDIO_DATASET) || "production";
+  resolveEnvValue(
+    import.meta.env.SANITY_STUDIO_DATASET,
+    import.meta.env.SANITY_DATASET,
+    import.meta.env.PUBLIC_SANITY_STUDIO_DATASET,
+    import.meta.env.PUBLIC_SANITY_DATASET,
+    import.meta.env.NEXT_PUBLIC_SANITY_DATASET,
+    env?.SANITY_STUDIO_DATASET,
+    env?.SANITY_DATASET,
+    env?.PUBLIC_SANITY_STUDIO_DATASET,
+    env?.PUBLIC_SANITY_DATASET,
+    env?.NEXT_PUBLIC_SANITY_DATASET,
+  ) || "production";
 
 if (!projectId || !dataset) {
   throw new Error(
-    "Missing Sanity configuration. Set SANITY_STUDIO_PROJECT_ID in your env file.",
+    "Missing Sanity configuration. Set SANITY_STUDIO_PROJECT_ID or SANITY_PROJECT_ID in your Vercel environment variables.",
   );
 }
 
