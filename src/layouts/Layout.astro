@@ -1,8 +1,8 @@
 ---
-import { LuSwords } from "react-icons/lu";
-import "../styles/global.css";
 import Analytics from "@vercel/analytics/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
+import { LuSwords } from "react-icons/lu";
+import "../styles/global.css";
 
 interface Props {
   title: string;
@@ -37,6 +37,10 @@ const { title } = Astro.props;
     /> -->
 
     <title>{title}</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>"
+    />
   </head>
   <body class="text-base-content bg-base-200">
     <header class="navbar bg-base-100 z-20">
@@ -58,7 +62,12 @@ const { title } = Astro.props;
       <main>
         <slot />
       </main>
-      <footer></footer>
+      <footer class="px-4 py-8 text-sm text-base-content/70">
+        Built by{" "}
+        <a class="link link-hover text-primary" href="https://mariawarnes.dev">
+          mariawarnes.dev
+        </a>
+      </footer>
     </div>
   </body>
 </html>
