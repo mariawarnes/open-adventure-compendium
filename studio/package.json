@@ -20,7 +20,7 @@
     "react-dom": "^19.2.4",
     "sanity": "^5.23.0",
     "sanity-plugin-icon-picker": "^4.0.0",
-    "styled-components": "^6.1.18"
+    "styled-components": "^6.4.1"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^6.0.0",
